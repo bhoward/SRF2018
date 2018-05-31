@@ -1,1 +1,0 @@
-{"rustc":8063647404091198368,"features":"[]","target":14553287928656242146,"profile":4526152405984878336,"path":18102019339843533514,"deps":[["vcell v0.1.0","vcell",15285240221686549347]],"local":[{"Precalculated":"0.2.0"}],"rustflags":["--sysroot","/Users/bhoward/.xargo"],"edition":"Edition2015"}
