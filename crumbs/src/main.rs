@@ -34,6 +34,7 @@ mod gpio;
 mod mbox;
 mod uart;
 mod lfb;
+mod font;
 
 fn main() {
     let uart = uart::MiniUart::new();

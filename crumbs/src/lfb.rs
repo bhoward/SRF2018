@@ -24,6 +24,7 @@
 
 use super::MMIO_BASE;
 use mbox;
+use font::Font;
 
 use core::sync::atomic::{compiler_fence, Ordering};
 
@@ -37,6 +38,7 @@ pub struct Lfb { // TODO change these types
     height: u32,
     pitch: u32,
     lfb: u32,
+    font: Font,
 }
 
 impl Lfb {
@@ -102,7 +104,9 @@ impl Lfb {
         let pitch = mbox.buffer[33];
         let lfb = mbox.buffer[28] & 0x3FFF_FFFF;
 
-        Ok(Lfb { width, height, pitch, lfb })
+        let font = Font::new();
+
+        Ok(Lfb { width, height, pitch, lfb, font })
    }
 
     pub fn print(&self, x: u32, y: u32, msg: &str) {
