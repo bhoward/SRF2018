@@ -34,18 +34,16 @@ mod gpio;
 mod mbox;
 mod uart;
 mod lfb;
-
-use core::sync::atomic::{compiler_fence, Ordering};
+mod font;
 
 fn main() {
     let uart = uart::MiniUart::new();
-    let mut lfb = lfb::Lfb::new();
 
-    // set up serial console
+     // set up serial console
     uart.init();
 
     // set up linear frame buffer
-    lfb.init();
+    let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
 
     lfb.print(10, 5, "Hello world!");
 

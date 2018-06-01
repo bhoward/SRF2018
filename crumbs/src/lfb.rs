@@ -24,9 +24,11 @@
 
 use super::MMIO_BASE;
 use mbox;
+use font::Font;
 
 use core::sync::atomic::{compiler_fence, Ordering};
 
+#[derive(Debug)]
 pub enum LfbError {
     MailboxError,
 }
@@ -36,14 +38,11 @@ pub struct Lfb { // TODO change these types
     height: u32,
     pitch: u32,
     lfb: u32,
+    font: Font,
 }
 
 impl Lfb {
-    pub fn new() -> Lfb {
-        Lfb { width: 0, height: 0, pitch: 0, lfb: 0 }
-    }
-
-    pub fn init(&mut self) -> Result<(), LfbError> {
+    pub fn new() -> Result<Lfb, LfbError> {
         let mut mbox = mbox::Mbox::new();
 
         mbox.buffer[0] = 35 * 4;
@@ -100,13 +99,15 @@ impl Lfb {
             return Err(LfbError::MailboxError);
         }
 
-        self.width = mbox.buffer[5];
-        self.height = mbox.buffer[6];
-        self.pitch = mbox.buffer[33];
-        self.lfb = mbox.buffer[28] & 0x3FFF_FFFF;
+        let width = mbox.buffer[5];
+        let height = mbox.buffer[6];
+        let pitch = mbox.buffer[33];
+        let lfb = mbox.buffer[28] & 0x3FFF_FFFF;
 
-        Ok(())
-    }
+        let font = Font::new();
+
+        Ok(Lfb { width, height, pitch, lfb, font })
+   }
 
     pub fn print(&self, x: u32, y: u32, msg: &str) {
         // TODO
