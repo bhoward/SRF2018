@@ -25,7 +25,8 @@ pub struct Font {
 }
 
 pub struct Glyph {
-    pub data: *const u8,
+    data: *const u8,
+    bytes_per_line: u32,
 }
 
 impl Font {
@@ -51,6 +52,16 @@ impl Font {
 
         let glyph_offset = (n * self.bytes_per_glyph) as isize;
         let data = unsafe { self.glyph_base.offset(glyph_offset) };
-        Glyph { data }
+        let bytes_per_line = (self.width + 7) / 8;
+        Glyph { data, bytes_per_line }
+    }
+}
+
+impl Glyph {
+    pub fn bit_at(&self, row: u32, col: u32) -> bool {
+        let byte_offset = row * self.bytes_per_line + col / 8;
+        let mask: u8 = 1 << (7 - col % 8); // TODO is this correct for width not a multiple of 8?
+        let byte = unsafe { *self.data.offset(byte_offset as isize) };
+        byte & mask == mask
     }
 }
