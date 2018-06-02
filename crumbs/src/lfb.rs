@@ -37,7 +37,7 @@ pub struct Lfb { // TODO change these types
     width: u32,
     height: u32,
     pitch: u32,
-    lfb: u32,
+    lfb: *mut u32,
     font: Font,
 }
 
@@ -102,8 +102,7 @@ impl Lfb {
         let width = mbox.buffer[5];
         let height = mbox.buffer[6];
         let pitch = mbox.buffer[33];
-        let lfb = mbox.buffer[28] & 0x3FFF_FFFF;
-
+        let lfb = mbox.buffer[28] & 0x3FFF_FFFF as *mut u32;
         let font = Font::new();
 
         Ok(Lfb { width, height, pitch, lfb, font })
@@ -121,9 +120,9 @@ impl Lfb {
                     let pixel = line + (col * 4);
 
                     if glyph.bit_at(row, col) {
-                        unsafe { *((self.lfb + pixel) as *mut u32) = 0x00FFFFFF };
+                        unsafe { *self.lfb.offset(pixel) = 0x00FFFFFF };
                     } else {
-                        unsafe { *((self.lfb + pixel) as *mut u32) = 0x00000000 };
+                        unsafe { *self.lfb.offset(pixel) = 0x00000000 };
                     }
                 }
             }
