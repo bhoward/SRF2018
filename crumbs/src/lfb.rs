@@ -111,13 +111,13 @@ impl Lfb {
     pub fn print(&self, x: u32, y: u32, msg: &str) {
         for c in msg.chars() {
             let glyph = self.font.get_glyph(c as u8);
-            let offs: isize = (y * self.font.height * self.pitch) + (x * (self.font.width+1) * 4);
+            let offs = ((y * self.font.height * self.pitch) + (x * (self.font.width+1) * 4)) as isize;
 
             for row in 0 .. self.font.height {
-                let line = offs + (row * self.pitch);
+                let line = offs + (row * self.pitch) as isize;
 
                 for col in 0 .. self.font.width {
-                    let pixel = line + (col * 4);
+                    let pixel = line + (col * 4) as isize;
 
                     if glyph.bit_at(row, col) {
                         unsafe { *self.lfb.offset(pixel) = 0x00FFFFFF };
