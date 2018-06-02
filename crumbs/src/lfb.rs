@@ -115,15 +115,15 @@ impl Lfb {
             let offs = (y * self.font.height * self.pitch) + (x * (self.font.width+1) * 4);
 
             for row in 0 .. self.font.height {
-                let line = offs + (row * pitch);
+                let line = offs + (row * self.pitch);
 
                 for col in 0 .. self.font.width {
                     let pixel = line + (col * 4);
 
                     if glyph.bit_at(row, col) {
-                        unsafe { *((lfb + pixel) as *mut u32) = 0x00FFFFFF };
+                        unsafe { *((self.lfb + pixel) as *mut u32) = 0x00FFFFFF };
                     } else {
-                        unsafe { *((lfb + pixel) as *mut u32) = 0x00000000 };
+                        unsafe { *((self.lfb + pixel) as *mut u32) = 0x00000000 };
                     }
                 }
             }
