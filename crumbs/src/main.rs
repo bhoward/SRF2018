@@ -42,8 +42,12 @@ fn main() {
      // set up serial console
     uart.init();
 
+    uart.puts("Before new Lfb");
+
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
+
+    uart.puts("After new Lfb");
 
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
