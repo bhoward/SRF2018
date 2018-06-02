@@ -140,6 +140,18 @@ impl Lfb {
             }
         }
     }
+
+    pub fn line(&self) {
+        for i in 0 .. 100 {
+            unsafe { *self.lfb.offset(i as isize) = 0x00FFFFFF };
+        }
+
+        let loc = self.width * 10
+
+        for i in loc .. loc + 100 {
+            unsafe { *self.lfb.offset(i as isize) = 0x00FFFFFF };
+        }
+    }
 }
 
 

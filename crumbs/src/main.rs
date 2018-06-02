@@ -47,6 +47,8 @@ fn main() {
 
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
+    lfb.line();
+
     // echo everything back
     loop {
         uart.send(uart.getc());
