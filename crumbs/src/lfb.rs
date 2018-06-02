@@ -111,7 +111,7 @@ impl Lfb {
     pub fn print(&self, x: u32, y: u32, msg: &str) {
         for c in msg.chars() {
             let glyph = self.font.get_glyph(c as u8);
-            let offs = (y * self.font.height * self.pitch) + (x * (self.font.width+1) * 4);
+            let offs: isize = (y * self.font.height * self.pitch) + (x * (self.font.width+1) * 4);
 
             for row in 0 .. self.font.height {
                 let line = offs + (row * self.pitch);
