@@ -45,9 +45,13 @@ fn main() {
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
 
+    uart.puts("Before print");
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
+    uart.puts("After print");
 
+    uart.puts("Before line");
     lfb.line();
+    uart.puts("After line");
 
     // echo everything back
     loop {
