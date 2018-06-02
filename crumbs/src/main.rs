@@ -45,7 +45,6 @@ fn main() {
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
 
-    uart.puts("Before print");
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
