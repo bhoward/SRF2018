@@ -49,6 +49,12 @@ fn main() {
 
     uart.puts("After new Lfb");
 
+    if lfb.width == 1024 {
+        uart.puts("1024 cats on logs");
+    } else {
+        uart.puts("no cats 4 u");
+    }
+
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
