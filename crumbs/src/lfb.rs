@@ -114,6 +114,7 @@ impl Lfb {
             self.font.get_glyph(c as u8);
 
         }
+    }
 }
 
 
