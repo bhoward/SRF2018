@@ -102,7 +102,7 @@ impl Lfb {
         let width = mbox.buffer[5];
         let height = mbox.buffer[6];
         let pitch = mbox.buffer[33];
-        let lfb = mbox.buffer[28] & 0x3FFF_FFFF as *mut u32;
+        let lfb = (mbox.buffer[28] & 0x3FFF_FFFF) as *mut u32;
         let font = Font::new();
 
         Ok(Lfb { width, height, pitch, lfb, font })
