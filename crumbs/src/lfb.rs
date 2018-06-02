@@ -115,7 +115,7 @@ impl Lfb {
         for c in msg.chars() {
             if c == '\n' {
                 x = 0;
-                y++;
+                y += 1;
             } else if c == '\r' {
                 x = 0;
             } else {
@@ -136,7 +136,7 @@ impl Lfb {
                     }
                 }
 
-                x++;
+                x += 1;
             }
         }
     }
