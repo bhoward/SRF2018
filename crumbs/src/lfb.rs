@@ -34,9 +34,9 @@ pub enum LfbError {
 }
 
 pub struct Lfb { // TODO change these types
-    width: u32,
-    height: u32,
-    pitch: u32,
+    pub width: u32,
+    pub height: u32,
+    pub pitch: u32,
     lfb: *mut u32,
     font: Font,
 }
