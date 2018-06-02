@@ -110,8 +110,10 @@ impl Lfb {
    }
 
     pub fn print(&self, x: u32, y: u32, msg: &str) {
-        // TODO
-    }
+        for c in msg.chars() {
+            self.font.get_glyph(c);
+            
+        }
 }
 
 
