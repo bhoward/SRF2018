@@ -43,8 +43,8 @@ impl Font {
         Font { numglyphs, height, width, glyph_base, bytes_per_glyph }
     }
 
-    pub fn get_glyph(&self, n: u8) -> Glyph {
-        let n = n as u32;
+    pub fn get_glyph(&self, c: char) -> Glyph {
+        let n = c as u32;
 
         if n >= self.numglyphs {
             panic!("character out of range");

@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-use super::MMIO_BASE;
 use mbox;
 use font::Font;
 
@@ -32,6 +31,9 @@ use core::sync::atomic::{compiler_fence, Ordering};
 pub enum LfbError {
     MailboxError,
 }
+
+const BLACK_PIXEL: u32 = 0x0000_0000;
+const WHITE_PIXEL: u32 = 0x00FF_FFFF;
 
 pub struct Lfb { // TODO change these types
     pub width: u32,
@@ -112,6 +114,7 @@ impl Lfb {
         let mut x = x;
         let mut y = y;
 
+        // TODO check bounds on x and y
         for c in msg.chars() {
             if c == '\n' {
                 x = 0;
@@ -119,37 +122,45 @@ impl Lfb {
             } else if c == '\r' {
                 x = 0;
             } else {
-                let glyph = self.font.get_glyph(c as u8);
-                let offs = ((y * self.font.height * self.pitch) + (x * (self.font.width+1) * 4)) as isize;
-
-                for row in 0 .. self.font.height {
-                    let line = offs + (row * self.pitch) as isize;
-
-                    for col in 0 .. self.font.width {
-                        let pixel = line + (col * 4) as isize;
-
-                        if glyph.bit_at(row, col) {
-                            unsafe { *self.lfb.offset(pixel) = 0x00FFFFFF };
-                        } else {
-                            unsafe { *self.lfb.offset(pixel) = 0x00000000 };
-                        }
-                    }
-                }
-
+                self.print_char(x, y, c);
                 x += 1;
             }
         }
     }
 
+    pub fn print_char(&self, x: u32, y: u32, c: char) {
+        let f = &self.font;
+        let glyph = f.get_glyph(c);
+        let offs = y * f.height * self.pitch + x * (f.width + 1) * 4;
+
+        for row in 0 .. f.height {
+            let line = offs + row * self.pitch;
+
+            for col in 0 .. f.width {
+                let pixel = line + col * 4;
+
+                unsafe {
+                    *self.lfb.offset(pixel as isize) =
+                        if glyph.bit_at(row, col) {
+                            WHITE_PIXEL
+                         } else {
+                             BLACK_PIXEL
+                         };
+                }
+            }
+        }
+    }
+
     pub fn line(&self) {
+        // TODO this is just for testing right now...
         for i in 0 .. 100 {
-            unsafe { *self.lfb.offset(i as isize) = 0x00FFFFFF };
+            unsafe { *self.lfb.offset(i as isize) = WHITE_PIXEL };
         }
 
         let loc = self.width * 10;
 
         for i in loc .. loc + 100 {
-            unsafe { *self.lfb.offset(i as isize) = 0x00FFFFFF };
+            unsafe { *self.lfb.offset(i as isize) = WHITE_PIXEL };
         }
     }
 }
