@@ -54,6 +54,11 @@ fn main() {
     } else {
         uart.puts("no cats 4 u");
     }
+    if lfb.pitch == 4096 {
+        uart.puts("pitch is another word for soot I think");
+    } else {
+        uart.puts("but maybe it's not");
+    }
 
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
