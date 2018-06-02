@@ -45,7 +45,7 @@ fn main() {
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
 
-    lfb.print(10, 5, "Hello world!");
+    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     // echo everything back
     loop {
