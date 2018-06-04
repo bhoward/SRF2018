@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+// Link to a PC screen font, in the form of a static library "libfont.a":
+//   aarch64-elf-ld -r -b binary -o font.o src/font.psf
+//   ar r libfont.a font.o
 #[link(name="font", kind="static")]
 extern {
     static _binary_font_psf_start : *const u8;
