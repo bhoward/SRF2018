@@ -167,7 +167,7 @@ impl Lfb {
     pub fn rect(&self, x: u32, y: u32, width: u32, length: u32) {
         for curr_y in y .. (y + length) {
             for curr_x in x .. (x + width) {
-                let curr_mem_loc = (curr_y * self.pitch) + curr_x;
+                let curr_mem_loc = (curr_y * (self.pitch / 4)) + curr_x;
                 unsafe { *self.lfb.offset(curr_mem_loc as isize) = WHITE_PIXEL };
             }
         }
