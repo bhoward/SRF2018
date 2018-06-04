@@ -50,16 +50,13 @@ fn main() {
 
     uart.puts("After new Lfb");
 
-    if lfb.width == 1024 {
-        uart.puts("1024 cats on logs");
-    } else {
-        uart.puts("no cats 4 u");
-    }
-    if lfb.pitch == 4096 {
-        uart.puts("pitch is another word for soot I think");
-    } else {
-        uart.puts("but maybe it's not");
-    }
+    uart.puts("Width: ");
+    uart.hex(lfb.width);
+    uart.puts("\nHeight: ");
+    uart.hex(lfb.height);
+    uart.puts("\nPitch: ");
+    uart.hex(lfb.pitch);
+
 
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
