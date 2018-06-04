@@ -131,13 +131,13 @@ impl Lfb {
     pub fn print_char(&self, x: u32, y: u32, c: char) {
         let f = &self.font;
         let glyph = f.get_glyph(c);
-        let offs = y * f.height * self.pitch + x * (f.width + 1) * 4;
+        let offs = y * f.height * self.pitch / 4 + x * (f.width + 1);
 
         for row in 0 .. f.height {
-            let line = offs + row * self.pitch;
+            let line = offs + row * self.pitch / 4;
 
             for col in 0 .. f.width {
-                let pixel = line + col * 4;
+                let pixel = line + col;
 
                 unsafe {
                     *self.lfb.offset(pixel as isize) =

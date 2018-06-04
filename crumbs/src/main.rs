@@ -59,7 +59,7 @@ fn main() {
     uart.hex(lfb.pitch);
 
 
-//  lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
+    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
     lfb.rect(5, 5, 300, 200);
