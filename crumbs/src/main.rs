@@ -58,6 +58,12 @@ fn main() {
     uart.puts("\nPitch: ");
     uart.hex(lfb.pitch);
 
+    uart.puts("\nFont width: ");
+    uart.hex(lfb.font.width);
+    uart.puts("\nFont height: ");
+    uart.hex(lfb.font.height);
+    uart.puts("\nFont numglyphs: ");
+    uart.hex(lfb.font.numglyphs);
 
     // lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 

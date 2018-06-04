@@ -34,13 +34,14 @@ pub enum LfbError {
 
 const BLACK_PIXEL: u32 = 0x0000_0000;
 const WHITE_PIXEL: u32 = 0x00FF_FFFF;
+const RED_PIXEL: u32 =   0x0000_00FF;
 
 pub struct Lfb { // TODO change these types
     pub width: u32,
     pub height: u32,
     pub pitch: u32,
     lfb: *mut u32,
-    font: Font,
+    pub font: Font,
 }
 
 impl Lfb {
@@ -168,7 +169,7 @@ impl Lfb {
         for curr_y in y .. (y + length) {
             for curr_x in x .. (x + width) {
                 let curr_mem_loc = (curr_y * (self.pitch / 4)) + curr_x;
-                unsafe { *self.lfb.offset(curr_mem_loc as isize) = WHITE_PIXEL };
+                unsafe { *self.lfb.offset(curr_mem_loc as isize) = RED_PIXEL };
             }
         }
     }
