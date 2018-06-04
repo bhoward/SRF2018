@@ -50,12 +50,12 @@ fn main() {
 
     uart.puts("After new Lfb");
 
-    uart.puts("Width: ");
-    uart.hex(lfb.width);
-    uart.puts("\nHeight: ");
-    uart.hex(lfb.height);
-    uart.puts("\nPitch: ");
-    uart.hex(lfb.pitch);
+    //uart.puts("Width: ");
+   // uart.hex(lfb.width);
+    //uart.puts("\nHeight: ");
+    //uart.hex(lfb.height);
+    //uart.puts("\nPitch: ");
+   // uart.hex(lfb.pitch);
 
 
     lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
