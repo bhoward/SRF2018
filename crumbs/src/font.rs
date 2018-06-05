@@ -29,7 +29,7 @@ use uart::MiniUart;
 //   ar r libfont.a font.o
 #[link(name="font", kind="static")]
 extern {
-    static _binary_font_psf_start : *const u8;
+    static _binary_font_psf_start : Psf;
 }
 
 // PC Screen Font (ps2)
@@ -60,19 +60,17 @@ pub struct Glyph {
 
 impl Font {
     pub fn new(uart: &MiniUart) -> Font {
-        let psf = unsafe { _binary_font_psf_start as *const Psf };
-        let numglyphs = unsafe { (*psf).numglyphs };
-        let height = unsafe { (*psf).height };
-        let width = unsafe { (*psf).width };
+        let psf = unsafe { &_binary_font_psf_start };
+        let numglyphs = psf.numglyphs;
+        let height = psf.height;
+        let width = psf.width;
 
-        uart.puts("\nbfps: ");
-        unsafe { uart.hex(_binary_font_psf_start as u32); }
-        uart.puts("\npsf: ");
-        uart.hex(psf as u32);
+        uart.puts("\nmagic: ");
+        uart.hex(psf.magic);
 
-        let headersize = unsafe { (*psf).headersize as isize };
-        let glyph_base = unsafe { (psf as *const u8).offset(headersize) };
-        let bytes_per_glyph = unsafe { (*psf).bytes_per_glyph };
+        let headersize = psf.headersize as isize;
+        let glyph_base = unsafe { (&psf as *const _ as *const u8).offset(headersize) };
+        let bytes_per_glyph = psf.bytes_per_glyph;
 
         Font { numglyphs, height, width, glyph_base, bytes_per_glyph }
     }
