@@ -25,6 +25,7 @@
 use mbox;
 use font::Font;
 use uart::MiniUart;
+use colors::*;
 
 use core::sync::atomic::{compiler_fence, Ordering};
 
@@ -32,12 +33,6 @@ use core::sync::atomic::{compiler_fence, Ordering};
 pub enum LfbError {
     MailboxError,
 }
-
-const BLACK_PIXEL: u32 = 0x0000_0000;
-const WHITE_PIXEL: u32 = 0x00FF_FFFF;
-const RED_PIXEL: u32 =   0x00FF_0000;
-const GREEN_PIXEL: u32 = 0x0000_FF00;
-const BLUE_PIXEL: u32 =  0x0000_00FF;
 
 pub struct Lfb { // TODO change these types
     pub width: u32,
@@ -168,11 +163,11 @@ impl Lfb {
         }
     }
 
-    pub fn rect(&self, x: u32, y: u32, width: u32, length: u32) {
+    pub fn rect(&self, x: u32, y: u32, width: u32, length: u32, color: u32) {
         for curr_y in y .. (y + length) {
             for curr_x in x .. (x + width) {
                 let curr_mem_loc = (curr_y * (self.pitch / 4)) + curr_x;
-                unsafe { *self.lfb.offset(curr_mem_loc as isize) = GREEN_PIXEL };
+                unsafe { *self.lfb.offset(curr_mem_loc as isize) = color; }
             }
         }
     }

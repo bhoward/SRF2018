@@ -37,6 +37,7 @@ mod uart;
 mod lfb;
 mod font;
 mod window;
+mod colors;
 
 fn main() {
     let uart = uart::MiniUart::new();

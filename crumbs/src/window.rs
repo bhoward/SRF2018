@@ -1,4 +1,7 @@
 use lfb::Lfb;
+use colors::*;
+
+const TITLE_BAR_HEIGHT: u32 = 16;
 
 pub struct Window {
     title: &'static str,
@@ -14,6 +17,7 @@ impl Window {
     }
 
     pub fn show(&self, lfb: &Lfb) {
-        lfb.rect(self.x, self.y, self.width, self.height);
+        lfb.rect(self.x, self.y, self.width, TITLE_BAR_HEIGHT, WHITE_PIXEL);
+        lfb.rect(self.x, self.y + TITLE_BAR_HEIGHT, self.width, self.height, BLUE_PIXEL);
     }
 }
