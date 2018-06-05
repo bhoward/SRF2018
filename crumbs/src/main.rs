@@ -36,6 +36,7 @@ mod mbox;
 mod uart;
 mod lfb;
 mod font;
+mod window;
 
 fn main() {
     let uart = uart::MiniUart::new();
@@ -68,7 +69,9 @@ fn main() {
     // lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
-    lfb.rect(5, 5, 300, 200);
+    
+    let window = window::Window::new("Test Window", 10, 20, 235, 100);
+    window.show(lfb);
 
     // echo everything back
     loop {
