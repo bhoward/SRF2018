@@ -69,7 +69,7 @@ fn main() {
 
     //lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
-    lfb.line();
+    //lfb.line();
     
     let window = window::Window::new("Test Window", 10, 20, 235, 100);
     let window2 = window::Window::new("Test Window 2", 100, 175, 100, 300);
