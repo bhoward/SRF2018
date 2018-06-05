@@ -24,6 +24,7 @@
 
 use mbox;
 use font::Font;
+use uart::MiniUart;
 
 use core::sync::atomic::{compiler_fence, Ordering};
 
@@ -34,7 +35,9 @@ pub enum LfbError {
 
 const BLACK_PIXEL: u32 = 0x0000_0000;
 const WHITE_PIXEL: u32 = 0x00FF_FFFF;
-const RED_PIXEL: u32 =   0x0000_00FF;
+const RED_PIXEL: u32 =   0x00FF_0000;
+const GREEN_PIXEL: u32 = 0x0000_FF00;
+const BLUE_PIXEL: u32 =  0x0000_00FF;
 
 pub struct Lfb { // TODO change these types
     pub width: u32,
@@ -45,7 +48,7 @@ pub struct Lfb { // TODO change these types
 }
 
 impl Lfb {
-    pub fn new() -> Result<Lfb, LfbError> {
+    pub fn new(uart: &MiniUart) -> Result<Lfb, LfbError> {
         let mut mbox = mbox::Mbox::new();
 
         mbox.buffer[0] = 35 * 4;
@@ -106,7 +109,7 @@ impl Lfb {
         let height = mbox.buffer[6];
         let pitch = mbox.buffer[33];
         let lfb = (mbox.buffer[28] & 0x3FFF_FFFF) as *mut u32;
-        let font = Font::new();
+        let font = Font::new(&uart);
 
         Ok(Lfb { width, height, pitch, lfb, font })
    }
@@ -169,7 +172,7 @@ impl Lfb {
         for curr_y in y .. (y + length) {
             for curr_x in x .. (x + width) {
                 let curr_mem_loc = (curr_y * (self.pitch / 4)) + curr_x;
-                unsafe { *self.lfb.offset(curr_mem_loc as isize) = RED_PIXEL };
+                unsafe { *self.lfb.offset(curr_mem_loc as isize) = GREEN_PIXEL };
             }
         }
     }

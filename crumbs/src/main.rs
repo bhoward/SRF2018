@@ -47,7 +47,7 @@ fn main() {
     uart.puts("\nBefore new Lfb");
 
     // set up linear frame buffer
-    let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
+    let lfb = lfb::Lfb::new(&uart).expect("unable to construct frame buffer");
 
     uart.puts("\nAfter new Lfb");
 
@@ -66,7 +66,7 @@ fn main() {
     uart.puts("\nFont numglyphs: ");
     uart.hex(lfb.font.numglyphs);
 
-    // lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
+    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
     
