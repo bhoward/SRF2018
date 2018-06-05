@@ -24,7 +24,6 @@
 
 use mbox;
 use font::Font;
-use uart::MiniUart;
 use colors::*;
 
 use core::sync::atomic::{compiler_fence, Ordering};
@@ -43,7 +42,7 @@ pub struct Lfb { // TODO change these types
 }
 
 impl Lfb {
-    pub fn new(uart: &MiniUart) -> Result<Lfb, LfbError> {
+    pub fn new() -> Result<Lfb, LfbError> {
         let mut mbox = mbox::Mbox::new();
 
         mbox.buffer[0] = 35 * 4;
@@ -104,7 +103,7 @@ impl Lfb {
         let height = mbox.buffer[6];
         let pitch = mbox.buffer[33];
         let lfb = (mbox.buffer[28] & 0x3FFF_FFFF) as *mut u32;
-        let font = Font::new(&uart);
+        let font = Font::new();
 
         Ok(Lfb { width, height, pitch, lfb, font })
    }
