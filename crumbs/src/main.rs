@@ -67,7 +67,7 @@ fn main() {
     uart.puts("\nFont numglyphs: ");
     uart.hex(lfb.font.numglyphs);
 
-    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
+    //lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
     
