@@ -13,7 +13,7 @@ impl Window {
         Window {title, x, y, width, height}
     }
 
-    pub fn show(&self, lfb: Lfb) {
+    pub fn show(&self, lfb: &Lfb) {
         lfb.rect(self.x, self.y, self.width, self.height);
     }
 }

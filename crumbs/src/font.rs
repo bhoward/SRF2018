@@ -66,9 +66,9 @@ impl Font {
         let width = unsafe { (*psf).width };
 
         uart.puts("\nbfps: ");
-        unsafe { uart.hex(_binary_font_psf_start as *const u32); }
+        unsafe { uart.hex(_binary_font_psf_start as u32); }
         uart.puts("\npsf: ");
-        uart.hex(psf as *const u32);
+        uart.hex(psf as u32);
 
         let headersize = unsafe { (*psf).headersize as isize };
         let glyph_base = unsafe { (psf as *const u8).offset(headersize) };
