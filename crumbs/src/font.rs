@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-use uart::MiniUart;
-
 // Link to a PC screen font, in the form of a static library "libfont.a":
 //   aarch64-elf-ld -r -b binary -o font.o src/font.psf
 //   ar r libfont.a font.o
@@ -43,6 +41,7 @@ struct Psf {
     bytes_per_glyph: u32,
     height: u32,
     width: u32,
+    glyphs: [u8; 2048],
 }
 
 pub struct Font {
@@ -54,22 +53,20 @@ pub struct Font {
 }
 
 pub struct Glyph {
-    data: *const u8,
-    bytes_per_line: u32,
+    pub data: *const u8, // TODO not pub
+    pub bytes_per_line: u32,
 }
 
 impl Font {
-    pub fn new(uart: &MiniUart) -> Font {
+    pub fn new() -> Font {
         let psf = unsafe { &_binary_font_psf_start };
         let numglyphs = psf.numglyphs;
         let height = psf.height;
         let width = psf.width;
 
-        uart.puts("\nmagic: ");
-        uart.hex(psf.magic);
-
         let headersize = psf.headersize as isize;
-        let glyph_base = unsafe { (&psf as *const _ as *const u8).offset(headersize) };
+        // let glyph_base = unsafe { (&psf as *const _ as *const u8).offset(headersize) };
+        let glyph_base = &psf.glyphs as *const u8; // TODO why???
         let bytes_per_glyph = psf.bytes_per_glyph;
 
         Font { numglyphs, height, width, glyph_base, bytes_per_glyph }

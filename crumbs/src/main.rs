@@ -45,29 +45,10 @@ fn main() {
      // set up serial console
     uart.init();
 
-    uart.puts("\nBefore new Lfb");
-
     // set up linear frame buffer
-    let lfb = lfb::Lfb::new(&uart).expect("unable to construct frame buffer");
+    let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
 
-    uart.puts("\nAfter new Lfb");
-
-
-    uart.puts("\nWidth: ");
-    uart.hex(lfb.width);
-    uart.puts("\nHeight: ");
-    uart.hex(lfb.height);
-    uart.puts("\nPitch: ");
-    uart.hex(lfb.pitch);
-
-    uart.puts("\nFont width: ");
-    uart.hex(lfb.font.width);
-    uart.puts("\nFont height: ");
-    uart.hex(lfb.font.height);
-    uart.puts("\nFont numglyphs: ");
-    uart.hex(lfb.font.numglyphs);
-
-    //lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
+    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
 
     lfb.line();
     
