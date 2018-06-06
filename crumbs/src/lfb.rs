@@ -108,7 +108,7 @@ impl Lfb {
         Ok(Lfb { width, height, pitch, lfb, font })
    }
 
-    pub fn print(&self, x: u32, y: u32, msg: &str) {
+    pub fn print(&self, x: u32, y: u32, msg: &str, color: u32) {
         let mut x = x;
         let mut y = y;
 
@@ -120,13 +120,13 @@ impl Lfb {
             } else if c == '\r' {
                 x = 0;
             } else {
-                self.print_char(x, y, c);
+                self.print_char(x, y, c, color);
                 x += 1;
             }
         }
     }
 
-    pub fn print_char(&self, x: u32, y: u32, c: char) {
+    pub fn print_char(&self, x: u32, y: u32, c: char, color: u32) {
         let f = &self.font;
         let glyph = f.get_glyph(c);
         let offs = y * f.height * self.pitch / 4 + x * (f.width + 1);
@@ -138,12 +138,9 @@ impl Lfb {
                 let pixel = line + col;
 
                 unsafe {
-                    *self.lfb.offset(pixel as isize) =
-                        if glyph.bit_at(row, col) {
-                            WHITE_PIXEL
-                         } else {
-                             BLACK_PIXEL
-                         };
+                    if glyph.bit_at(row, col) {
+                        *self.lfb.offset(pixel as isize) = color;
+                    }
                 }
             }
         }

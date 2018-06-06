@@ -38,6 +38,9 @@ mod lfb;
 mod font;
 mod window;
 mod colors;
+mod window_manager;
+
+use colors::*;
 
 fn main() {
     let uart = uart::MiniUart::new();
@@ -48,7 +51,10 @@ fn main() {
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
 
-    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!");
+    let window_manager = window_manager::WindowManager::new();
+    window_manager.fill_bg(&lfb);
+
+    lfb.print(10, 5, "Hello Rustacean (Castlemakers if you prefer)!", RED_PIXEL);
 
     //lfb.line();
     
