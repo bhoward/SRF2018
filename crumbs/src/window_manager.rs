@@ -7,7 +7,7 @@ pub struct WindowManager {
 
 impl WindowManager {
     pub fn new() -> WindowManager {
-        let bg_color = GREEN_PIXEL;
+        let bg_color = BG_COLOR;
 
         WindowManager {bg_color}
     }
