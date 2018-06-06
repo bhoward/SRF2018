@@ -122,8 +122,8 @@ impl Lfb {
     pub fn print_char(&self, x: u32, y: u32, c: char, color: u32) {
         let glyph = self.font.get_glyph(c);
 
-        for row in 0 .. f.height {
-            for col in 0 .. f.width {
+        for row in 0 .. self.font.height {
+            for col in 0 .. self.font.width {
                 let pixel = (y + row) * self.pitch / 4 + x + col;
 
                 unsafe {
