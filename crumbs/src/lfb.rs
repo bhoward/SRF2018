@@ -51,14 +51,14 @@ impl Lfb {
         mbox.buffer[2] = 0x48003; // set physical width/height
         mbox.buffer[3] = 8;
         mbox.buffer[4] = 8;
-        mbox.buffer[5] = 1024; // FrameBufferInfo.width
-        mbox.buffer[6] = 768;  // FrameBufferInfo.height
+        mbox.buffer[5] = 800; // FrameBufferInfo.width
+        mbox.buffer[6] = 480;  // FrameBufferInfo.height
 
         mbox.buffer[7] = 0x48004; // set virtual width/height
         mbox.buffer[8] = 8;
         mbox.buffer[9] = 8;
-        mbox.buffer[10] = 1024; // FrameBufferInfo.virtual_width
-        mbox.buffer[11] = 768;  // FrameBufferInfo.virtual_height
+        mbox.buffer[10] = 800; // FrameBufferInfo.virtual_width
+        mbox.buffer[11] = 480;  // FrameBufferInfo.virtual_height
 
         mbox.buffer[12] = 0x48009; // set virtual offset
         mbox.buffer[13] = 8;
