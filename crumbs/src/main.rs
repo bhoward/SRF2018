@@ -58,8 +58,8 @@ fn main() {
 
     //lfb.line();
     
-    let window = window::Window::new("Test Window", 10, 20, 235, 100);
-    let window2 = window::Window::new("Test Window 2", 100, 175, 100, 300);
+    let window = window::Window::new("Test Window", 10, 20, 250, 100);
+    let window2 = window::Window::new("Test Window 2", 100, 70, 280, 150);
     window.show(&lfb);
     window2.show(&lfb);
 
