@@ -114,28 +114,17 @@ impl Lfb {
 
         // TODO check bounds on x and y
         for c in msg.chars() {
-            if c == '\n' {
-                x = 0;
-                y += 1;
-            } else if c == '\r' {
-                x = 0;
-            } else {
-                self.print_char(x, y, c, color);
-                x += 1;
-            }
+            self.print_char(x, y, c, color);
+            x += self.font.width + 1;
         }
     }
 
     pub fn print_char(&self, x: u32, y: u32, c: char, color: u32) {
-        let f = &self.font;
-        let glyph = f.get_glyph(c);
-        let offs = y * f.height * self.pitch / 4 + x * (f.width + 1);
+        let glyph = self.font.get_glyph(c);
 
         for row in 0 .. f.height {
-            let line = offs + row * self.pitch / 4;
-
             for col in 0 .. f.width {
-                let pixel = line + col;
+                let pixel = (y + row) * self.pitch / 4 + x + col;
 
                 unsafe {
                     if glyph.bit_at(row, col) {
