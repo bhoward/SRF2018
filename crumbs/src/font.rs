@@ -41,7 +41,7 @@ struct Psf {
     bytes_per_glyph: u32,
     height: u32,
     width: u32,
-    glyphs: [u8; 2048], // TODO handle a Unicode table
+    // glyphs, then optional Unicode table, go here
 }
 
 pub struct Font {
@@ -53,8 +53,8 @@ pub struct Font {
 }
 
 pub struct Glyph {
-    pub data: *const u8, // TODO not pub
-    pub bytes_per_line: u32,
+    data: *const u8,
+    bytes_per_line: u32,
 }
 
 impl Font {
@@ -65,8 +65,7 @@ impl Font {
         let width = psf.width;
 
         let headersize = psf.headersize as isize;
-        let glyph_base0 = unsafe { (psf as *const _ as *const u8).offset(headersize) }; // TODO fixed??
-        let glyph_base = &psf.glyphs as *const u8; // TODO why???
+        let glyph_base = unsafe { (psf as *const _ as *const u8).offset(headersize) };
         let bytes_per_glyph = psf.bytes_per_glyph;
 
         Font { numglyphs, height, width, glyph_base, bytes_per_glyph }
