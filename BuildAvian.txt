@@ -1,0 +1,23 @@
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install g++-aarch64-linux-gnu
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+update-alternatives --config java
+# put JAVA_HOME="... the path in the output ..." at end of /etc/environment
+sudo vim /etc/environment 
+source /etc/environment 
+# restart
+
+# download zlib source from zlib.org
+tar -xzf Downloads/zlib-1.2.11.tar.gz 
+cd zlib-1.2.11/
+CC=aarch64-linux-gnu-gcc prefix=/usr/aarch64-linux-gnu/ ./configure
+make
+sudo make install
+
+cd ~/git
+git clone https://github.com/ReadyTalk/avian.git
+cd avian
+make arch=arm64
