@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andre Richter <andre.o.richter@gmail.com>
+ * Copyright (c) 2018 Brian Howard <bhoward@depauw.edu>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-use super::MMIO_BASE;
 use mbox;
 use font::Font;
+use colors::*;
 
 use core::sync::atomic::{compiler_fence, Ordering};
 
@@ -34,11 +34,11 @@ pub enum LfbError {
 }
 
 pub struct Lfb { // TODO change these types
-    width: u32,
-    height: u32,
-    pitch: u32,
-    lfb: u32,
-    font: Font,
+    pub width: u32,
+    pub height: u32,
+    pub pitch: u32,
+    lfb: *mut u32,
+    pub font: Font,
 }
 
 impl Lfb {
@@ -51,14 +51,14 @@ impl Lfb {
         mbox.buffer[2] = 0x48003; // set physical width/height
         mbox.buffer[3] = 8;
         mbox.buffer[4] = 8;
-        mbox.buffer[5] = 1024; // FrameBufferInfo.width
-        mbox.buffer[6] = 768;  // FrameBufferInfo.height
+        mbox.buffer[5] = 800; // FrameBufferInfo.width
+        mbox.buffer[6] = 480;  // FrameBufferInfo.height
 
         mbox.buffer[7] = 0x48004; // set virtual width/height
         mbox.buffer[8] = 8;
         mbox.buffer[9] = 8;
-        mbox.buffer[10] = 1024; // FrameBufferInfo.virtual_width
-        mbox.buffer[11] = 768;  // FrameBufferInfo.virtual_height
+        mbox.buffer[10] = 800; // FrameBufferInfo.virtual_width
+        mbox.buffer[11] = 480;  // FrameBufferInfo.virtual_height
 
         mbox.buffer[12] = 0x48009; // set virtual offset
         mbox.buffer[13] = 8;
@@ -102,16 +102,58 @@ impl Lfb {
         let width = mbox.buffer[5];
         let height = mbox.buffer[6];
         let pitch = mbox.buffer[33];
-        let lfb = mbox.buffer[28] & 0x3FFF_FFFF;
-
+        let lfb = (mbox.buffer[28] & 0x3FFF_FFFF) as *mut u32;
         let font = Font::new();
 
         Ok(Lfb { width, height, pitch, lfb, font })
    }
 
-    pub fn print(&self, x: u32, y: u32, msg: &str) {
-        // TODO
+    pub fn print(&self, x: u32, y: u32, msg: &str, color: u32) {
+        let mut x = x;
+        let mut y = y;
+
+        // TODO check bounds on x and y
+        for c in msg.chars() {
+            self.print_char(x, y, c, color);
+            x += self.font.width + 1;
+        }
+    }
+
+    pub fn print_char(&self, x: u32, y: u32, c: char, color: u32) {
+        let glyph = self.font.get_glyph(c);
+
+        for row in 0 .. self.font.height {
+            for col in 0 .. self.font.width {
+                let pixel = (y + row) * self.pitch / 4 + x + col;
+
+                unsafe {
+                    if glyph.bit_at(row, col) {
+                        *self.lfb.offset(pixel as isize) = color;
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn line(&self) {
+        // TODO this is just for testing right now...
+        for i in 0 .. 100 {
+            unsafe { *self.lfb.offset(i as isize) = WHITE_PIXEL };
+        }
+
+        let loc = self.width * 10;
+
+        for i in loc .. loc + 100 {
+            unsafe { *self.lfb.offset(i as isize) = WHITE_PIXEL };
+        }
+    }
+
+    pub fn rect(&self, x: u32, y: u32, width: u32, length: u32, color: u32) {
+        for curr_y in y .. (y + length) {
+            for curr_x in x .. (x + width) {
+                let curr_mem_loc = (curr_y * (self.pitch / 4)) + curr_x;
+                unsafe { *self.lfb.offset(curr_mem_loc as isize) = color; }
+            }
+        }
     }
 }
-
-
