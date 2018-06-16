@@ -39,6 +39,7 @@ mod font;
 mod window;
 mod colors;
 mod window_manager;
+mod heap;
 
 use colors::*;
 
@@ -62,6 +63,11 @@ fn main() {
     let window2 = window::Window::new("Test Window 2", 100, 70, 280, 150);
     window.show(&lfb);
     window2.show(&lfb);
+
+    let heap = heap::Heap::new();
+    
+    uart.hex(heap.k_end as u32);
+    uart.hex(heap.h_end as u32);
 
     // echo everything back
     loop {
