@@ -66,8 +66,8 @@ fn main() {
 
     let heap = heap::Heap::new();
     
-    uart.hex(heap.k_end as u32);
-    uart.hex(heap.h_end as u32);
+    uart.hex(heap.k_end as *mut _ as u32);
+    uart.hex(heap.h_end as *mut _ as u32);
 
     // echo everything back
     loop {
