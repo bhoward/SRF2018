@@ -43,7 +43,7 @@ endif
 kernel8.img: kernel8
 	aarch64-unknown-linux-gnueabi-objcopy -O binary -S kernel8 kernel8.img
 
-qemu:
+qemu: kernel8.img
 	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
 
 clippy:
