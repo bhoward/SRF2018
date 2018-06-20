@@ -24,34 +24,37 @@
 
 use super::MMIO_BASE;
 use core::ops;
+use core::sync::atomic::{compiler_fence, Ordering};
 use gpio;
+use mbox;
 use volatile_register::*;
 
-const MINI_UART_BASE: u32 = MMIO_BASE + 0x21_5000;
+const UART_BASE: u32 = MMIO_BASE + 0x20_1000;
 
-/// Auxilary mini UART registers
+// PL011 UART registers
 #[allow(non_snake_case)]
 #[repr(C)]
 pub struct RegisterBlock {
-    __reserved_0: u32,       // 0x00
-    ENABLES: RW<u32>,        // 0x04
-    __reserved_1: [u32; 14], // 0x08
-    MU_IO: RW<u32>,          // 0x40
-    MU_IER: RW<u32>,         // 0x44
-    MU_IIR: RW<u32>,         // 0x48
-    MU_LCR: RW<u32>,         // 0x4C
-    MU_MCR: RW<u32>,         // 0x50
-    MU_LSR: RW<u32>,         // 0x54
-    MU_MSR: RW<u32>,         // 0x58
-    MU_SCRATCH: RW<u32>,     // 0x5C
-    MU_CNTL: RW<u32>,        // 0x60
-    MU_STAT: RW<u32>,        // 0x64
-    MU_BAUD: RW<u32>,        // 0x68
+    DR: RW<u32>,            // 0x00
+    __reserved_0: [u32; 5], // 0x04
+    FR: RO<u32>,            // 0x18
+    __reserved_1: [u32; 2], // 0x1c
+    IBRD: WO<u32>,          // 0x24
+    FBRD: WO<u32>,          // 0x28
+    LCRH: WO<u32>,          // 0x2C
+    CR: WO<u32>,            // 0x30
+    __reserved_2: [u32; 4], // 0x34
+    ICR: WO<u32>,           // 0x44
 }
 
-pub struct MiniUart;
+pub enum UartError {
+    MailboxError,
+}
+pub type Result<T> = ::core::result::Result<T, UartError>;
 
-impl ops::Deref for MiniUart {
+pub struct Uart;
+
+impl ops::Deref for Uart {
     type Target = RegisterBlock;
 
     fn deref(&self) -> &Self::Target {
@@ -59,35 +62,48 @@ impl ops::Deref for MiniUart {
     }
 }
 
-impl MiniUart {
-    pub fn new() -> MiniUart {
-        MiniUart
+impl Uart {
+    pub fn new() -> Uart {
+        Uart
     }
 
     /// Returns a pointer to the register block
     fn ptr() -> *const RegisterBlock {
-        MINI_UART_BASE as *const _
+        UART_BASE as *const _
     }
 
     ///Set baud rate and characteristics (115200 8N1) and map to GPIO
-    pub fn init(&self) {
-        // initialize UART
-        unsafe {
-            self.ENABLES.modify(|x| x | 1); // enable UART1, AUX mini uart
-            self.MU_IER.write(0);
-            self.MU_CNTL.write(0);
-            self.MU_LCR.write(3); // 8 bits
-            self.MU_MCR.write(0);
-            self.MU_IER.write(0);
-            self.MU_IIR.write(0xC6); // disable interrupts
-            self.MU_BAUD.write(270); // 115200 baud
+    pub fn init(&self, mbox: &mut mbox::Mbox) -> Result<()> {
+        // turn off UART0
+        unsafe { self.CR.write(0) };
 
-            // map UART1 to GPIO pins
+        // set up clock for consistent divisor values
+        mbox.buffer[0] = 9 * 4;
+        mbox.buffer[1] = mbox::REQUEST;
+        mbox.buffer[2] = mbox::tag::SETCLKRATE;
+        mbox.buffer[3] = 12;
+        mbox.buffer[4] = 8;
+        mbox.buffer[5] = mbox::clock::UART; // UART clock
+        mbox.buffer[6] = 4_000_000; // 4Mhz
+        mbox.buffer[7] = 0; // skip turbo setting
+        mbox.buffer[8] = mbox::tag::LAST;
+
+        // Insert a compiler fence that ensures that all stores to the
+        // mbox buffer are finished before the GPU is signaled (which
+        // is done by a store operation as well).
+        compiler_fence(Ordering::Release);
+
+        if mbox.call(mbox::channel::PROP).is_err() {
+            return Err(UartError::MailboxError); // Abort if UART clocks couldn't be set
+        };
+
+        // map UART0 to GPIO pins
+        unsafe {
             (*gpio::GPFSEL1).modify(|x| {
                 // Modify with a closure
                 let mut ret = x;
                 ret &= !((7 << 12) | (7 << 15)); // gpio14, gpio15
-                ret |= (2 << 12) | (2 << 15); // alt5
+                ret |= (4 << 12) | (4 << 15); // alt0
 
                 ret
             });
@@ -101,16 +117,23 @@ impl MiniUart {
             for _ in 0..150 {
                 asm!("nop" :::: "volatile");
             }
-            (*gpio::GPPUDCLK0).write(0); // flush GPIO setup
-            self.MU_CNTL.write(3); // enable Tx, Rx
+            (*gpio::GPPUDCLK0).write(0);
+
+            self.ICR.write(0x7FF); // clear interrupts
+            self.IBRD.write(2); // 115200 baud
+            self.FBRD.write(0xB);
+            self.LCRH.write(0b11 << 5); // 8n1
+            self.CR.write(0x301); // enable Tx, Rx, FIFO
         }
+
+        Ok(())
     }
 
     /// Send a character
     pub fn send(&self, c: char) {
         // wait until we can send
         loop {
-            if (self.MU_LSR.read() & 0x20) == 0x20 {
+            if (self.FR.read() & 0x20) != 0x20 {
                 break;
             }
 
@@ -118,14 +141,14 @@ impl MiniUart {
         }
 
         // write the character to the buffer
-        unsafe { self.MU_IO.write(c as u32) };
+        unsafe { self.DR.write(c as u32) };
     }
 
     /// Receive a character
     pub fn getc(&self) -> char {
         // wait until something is in the buffer
         loop {
-            if (self.MU_LSR.read() & 0x01) == 0x01 {
+            if (self.FR.read() & 0x10) != 0x10 {
                 break;
             }
 
@@ -133,7 +156,7 @@ impl MiniUart {
         }
 
         // read it and return
-        let mut ret = self.MU_IO.read() as u8 as char;
+        let mut ret = self.DR.read() as u8 as char;
 
         // convert carrige return to newline
         if ret == '\r' {

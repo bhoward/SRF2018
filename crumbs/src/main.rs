@@ -44,10 +44,14 @@ mod heap;
 use colors::*;
 
 fn main() {
-    let uart = uart::MiniUart::new();
+    let mut mbox = mbox::Mbox::new();
+    let uart = uart::Uart::new();
 
-     // set up serial console
-    uart.init();
+    // set up serial console
+    if uart.init(&mut mbox).is_err() {
+        return; // If UART fails, abort early
+    }
+
 
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");

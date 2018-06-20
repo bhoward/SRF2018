@@ -55,7 +55,13 @@ pub mod channel {
 // Tags
 pub mod tag {
     pub const GETSERIAL: u32 = 0x10004;
+    pub const SETCLKRATE: u32 = 0x38002;
     pub const LAST: u32 = 0;
+}
+
+// Clocks
+pub mod clock {
+    pub const UART: u32 = 0x0_0000_0002;
 }
 
 // Responses
@@ -115,16 +121,14 @@ impl Mbox {
                 break;
             }
 
-            unsafe {
-                asm!("nop" :::: "volatile");
-            }
+            unsafe { asm!("nop" :::: "volatile") };
         }
 
         // write the address of our message to the mailbox with channel identifier
         unsafe {
             self.WRITE
-                .write(((self.buffer.as_ptr() as u32) & !0xF) | (channel & 0xF));
-        }
+                .write(((self.buffer.as_ptr() as u32) & !0xF) | (channel & 0xF))
+        };
 
         // now wait for the response
         loop {
@@ -134,9 +138,7 @@ impl Mbox {
                     break;
                 }
 
-                unsafe {
-                    asm!("nop" :::: "volatile");
-                }
+                unsafe { asm!("nop" :::: "volatile") };
             }
 
             let resp: u32 = self.READ.read();

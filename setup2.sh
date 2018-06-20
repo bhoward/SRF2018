@@ -1,8 +1,3 @@
-# install Ubuntu 18.04 in Virtual Box, with at least 20GB hard drive
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install build-essential
-# insert VBoxGuestAdditions here, then reboot
 sudo usermod -aG vboxsf bhoward
 sudo apt-get install m4 curl libz-dev git pkg-config libglib2.0-dev libpixman-1-dev flex bison vim
 curl https://sh.rustup.rs -sSf | sh
@@ -90,9 +85,10 @@ cd build
 ../configure --python=/usr/bin/python3 --target-list=aarch64-softmmu
 make
 sudo make install
-# add $HOME/opt/cross/bin to your PATH
+# add $HOME/opt/cross/bin to your PATH -- last line of ~/.profile
 # reboot (to refresh dynamic library path)
 # cd ~/git/raspi3-tutorial/0A_pcscreenfont
 # make
 # qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
 # start Remmina and connect to VNC at 127.0.0.1:5900
+# Or, in crumbs: make qemu, then start Remmina as above

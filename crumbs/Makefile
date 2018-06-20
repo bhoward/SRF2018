@@ -24,20 +24,7 @@
 
 TARGET = aarch64-raspi3-none-elf
 
-CROSS_CONTAINER = ./dockcross-linux-aarch64
-CROSS_CONTAINER_OBJCOPY = /usr/bin/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-objcopy
-
-UTILS_CONTAINER = andrerichter/raspi3-utils
-DOCKER_CMD = docker run -it --rm -v $(shell pwd):/work -w /work
-QEMU_CMD = qemu-system-aarch64 -M raspi3 -kernel kernel8.img
-
-all: clean cross_cont_download kernel8.img
-
-cross_cont_download:
-ifeq (,$(wildcard $(CROSS_CONTAINER)))
-	docker run --rm dockcross/linux-arm64 > $(CROSS_CONTAINER)
-	chmod +x $(CROSS_CONTAINER)
-endif
+all: clean kernel8.img
 
 target/$(TARGET)/debug/kernel8: src/main.rs
 	RUST_TARGET_PATH=$(shell pwd) xargo build --target=$(TARGET)
@@ -54,10 +41,10 @@ kernel8: target/$(TARGET)/release/kernel8
 endif
 
 kernel8.img: kernel8
-	$(CROSS_CONTAINER) $(CROSS_CONTAINER_OBJCOPY) -O binary -S $< kernel8.img
+	aarch64-unknown-linux-gnueabi-objcopy -O binary -S kernel8 kernel8.img
 
 qemu:
-	$(DOCKER_CMD) $(UTILS_CONTAINER) $(QEMU_CMD) -serial stdio
+	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
 
 clippy:
 	RUSTFLAGS="-C panic=abort" xargo clippy
