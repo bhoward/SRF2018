@@ -2,6 +2,7 @@
 # MIT License
 #
 # Copyright (c) 2018 Andre Richter <andre.o.richter@gmail.com>
+# Copyright (c) 2018 Brian Howard <bhoward@depauw.edu>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,9 @@
 
 TARGET = aarch64-raspi3-none-elf
 
+SERIAL_DEVICE = /dev/tty.SLAB_USBtoUART
+RASPBOOTCOM = ../raspbootin/raspbootcom/raspbootcom $(SERIAL_DEVICE)
+
 all: clean kernel8.img
 
 target/$(TARGET)/debug/kernel8: src/main.rs
@@ -45,6 +49,9 @@ kernel8.img: kernel8
 
 qemu: kernel8.img
 	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
+
+raspboot: kernel8.img
+	$(RASPBOOTCOM) kernel8.img
 
 clippy:
 	RUSTFLAGS="-C panic=abort" xargo clippy
