@@ -74,9 +74,6 @@ fn main() {
     uart.puts("\n");
     uart.hex(heap.h_end as *mut _ as u32);
     uart.puts("\n");
-    uart.hex(heap.bss_start as u32);
-    uart.puts("\n");
-    uart.hex(heap.bss_end as u32);
 
     // echo everything back
     loop {
