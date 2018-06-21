@@ -30,18 +30,18 @@ RASPBOOTCOM = ../raspbootin/raspbootcom/raspbootcom $(SERIAL_DEVICE)
 
 all: clean kernel8.img
 
-target/$(TARGET)/debug/kernel8: src/main.rs
+target/$(TARGET)/debug/kernel8: src/*.rs
 	RUST_TARGET_PATH=$(shell pwd) xargo build --target=$(TARGET)
-	cp $@ .
 
-target/$(TARGET)/release/kernel8: src/main.rs
+target/$(TARGET)/release/kernel8: src/*.rs
 	RUST_TARGET_PATH=$(shell pwd) xargo build --target=$(TARGET) --release
-	cp $@ .
 
 ifeq ($(DEBUG),1)
 kernel8: target/$(TARGET)/debug/kernel8
+	cp $< .
 else
 kernel8: target/$(TARGET)/release/kernel8
+	cp $< .
 endif
 
 kernel8.img: kernel8
