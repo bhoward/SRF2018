@@ -25,6 +25,7 @@
 
 #![no_std]
 #![feature(asm)]
+#![feature(const_int_ops)]
 
 extern crate raspi3_glue;
 extern crate volatile_register;
@@ -69,14 +70,13 @@ fn main() {
     window2.show(&lfb);
 
     let heap = heap::Heap::new();
-    
+
     uart.hex(heap.k_end as *mut _ as u32);
     uart.puts("\n");
     uart.hex(heap.h_end as *mut _ as u32);
     uart.puts("\n");
-    uart.hex(heap.bss_start as u32);
-    uart.puts("\n");
-    uart.hex(heap.bss_end as u32);
+
+    heap.free(heap.k_end(), (heap.h_end - heap.k_end) as usize);
 
     // echo everything back
     loop {
