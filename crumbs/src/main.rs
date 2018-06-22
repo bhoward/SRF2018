@@ -75,8 +75,11 @@ fn main() {
     uart.puts("\n");
     uart.hex(heap.h_end as *mut _ as u32);
     uart.puts("\n");
+<<<<<<< HEAD
 
     heap.free(heap.k_end(), (heap.h_end - heap.k_end) as usize);
+=======
+>>>>>>> 0b534d1717dca191b93a8d087dd5566803f3d144
 
     // echo everything back
     loop {

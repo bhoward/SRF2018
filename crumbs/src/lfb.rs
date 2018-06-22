@@ -74,7 +74,9 @@ impl Lfb {
         mbox.buffer[21] = 0x48006; // set pixel order
         mbox.buffer[22] = 4;
         mbox.buffer[23] = 4;
-        mbox.buffer[24] = 1; // RGB
+        mbox.buffer[24] = 0; // BGR -- Blue is first byte (little-endian)
+        // using BGR works on both RPi and QEMU;
+        // using 1 for RGB switches order on QEMU but not on actual RPi
 
         mbox.buffer[25] = 0x40001; // get framebuffer
         mbox.buffer[26] = 8;
