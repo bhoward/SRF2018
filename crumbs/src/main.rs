@@ -26,6 +26,7 @@
 #![no_std]
 #![feature(asm)]
 #![feature(const_int_ops)]
+#![feature(ptr_offset_from)]
 
 extern crate raspi3_glue;
 extern crate volatile_register;
@@ -41,18 +42,13 @@ mod window;
 mod colors;
 mod window_manager;
 mod heap;
+mod log;
 
 use colors::*;
+use log::*;
 
 fn main() {
-    let mut mbox = mbox::Mbox::new();
-    let uart = uart::Uart::new();
-
-    // set up serial console
-    if uart.init(&mut mbox).is_err() {
-        return; // If UART fails, abort early
-    }
-
+    log_init();
 
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
@@ -69,17 +65,25 @@ fn main() {
     window.show(&lfb);
     window2.show(&lfb);
 
-    let heap = heap::Heap::new();
+    let mut heap = heap::Heap::new();
 
-    uart.hex(heap.k_end as *mut _ as u32);
-    uart.puts("\n");
-    uart.hex(heap.h_end as *mut _ as u32);
-    uart.puts("\n");
+    log("Heap start: ");
+    log_hex(heap.k_end as *mut _ as u32);
+    log("\n");
+    log("Heap end: ");
+    log_hex(heap.h_end as *mut _ as u32);
+    log("\n");
 
-    heap.free(heap.k_end(), (heap.h_end - heap.k_end) as usize);
+    let k_end = heap.k_end;
+    let h_end = heap.h_end;
 
+    unsafe { heap.free(k_end, h_end.offset_from(k_end) as usize); }
+
+/*
     // echo everything back
     loop {
         uart.send(uart.getc());
     }
+*/
 }
+

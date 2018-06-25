@@ -1,4 +1,4 @@
-use uart;
+use log::*;
 
 pub const SYSTEM_BITS: usize = usize::min_value().count_zeros() as usize;
 
@@ -22,6 +22,11 @@ impl Heap {
     }
 
     pub fn free(&mut self, block: *mut u8, free_size: usize) {
+        log_hex(block as u32);
+        log(": ");
+        log_hex(free_size as u32);
+        log("\n");
+
         let block_size: usize = usize::next_power_of_two(free_size / 2);
         let block_end = unsafe { block.offset(block_size as isize) };
         let free_lists_index = usize::count_zeros(block_size);
