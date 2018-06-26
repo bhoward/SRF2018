@@ -76,8 +76,11 @@ fn main() {
 
     let k_end = heap.k_end;
     let h_end = heap.h_end;
+    let heap_size = unsafe { h_end.offset_from(k_end) as usize + 1 };
+    free_blocks(&mut heap, k_end, 8, heap_size);
 
-    unsafe { heap.free(k_end, h_end.offset_from(k_end) as usize); }
+    // unsafe { heap.free(k_end, h_end.offset_from(k_end) as usize); }
+    log("Walk the heap\n");
     heap.log_heap();
 
 /*
@@ -86,5 +89,18 @@ fn main() {
         uart.send(uart.getc());
     }
 */
+}
+
+fn free_blocks(heap: &mut heap::Heap, start: *mut u8, curr_size: usize, total_size: usize) {
+    if total_size > 0 {
+        if (start as usize & curr_size) != 0 {
+            let size = if curr_size < total_size {curr_size} else {total_size};
+            heap.free(start, size);
+            let next = unsafe { start.offset(size as isize) };
+            free_blocks(heap, next, curr_size * 2, total_size - size);
+        } else {
+            free_blocks(heap, start, curr_size * 2, total_size);
+        }
+    }
 }
 

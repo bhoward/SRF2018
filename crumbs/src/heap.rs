@@ -17,34 +17,37 @@ impl Heap {
     pub fn new() -> Heap {
         let k_end = unsafe { &mut _end as *mut u8 };
         let h_end = 0x3EFFFFFF as *mut u8;
-        let free_lists = [0 as *mut u8; SYSTEM_BITS];        
+        let free_lists = [0 as *mut u8; SYSTEM_BITS];
 
-        Heap {free_lists, k_end, h_end}
+        let heap_start = (((k_end as usize - 1) / 8 + 1) * 8) as *mut u8;
+
+        Heap {free_lists, k_end: heap_start, h_end}
     }
 
     pub fn free(&mut self, block: *mut u8, free_size: usize) {
         if free_size >= 8 {
-            log_hex(block as u32);
-            log(": ");
-            log_hex(free_size as u32);
-            log("\n");
-
-            let block_size: usize = usize::next_power_of_two(free_size / 2);
+            let block_size: usize = usize::next_power_of_two(free_size / 2 + 1);
             let block_end: *mut u8 = unsafe { block.offset(block_size as isize) };
-            let free_lists_index: usize = usize::trailing_zeros(block_size);
+            let free_lists_index: usize = usize::trailing_zeros(block_size) as usize;
 
-            /*
-            log("\n");
-            log_hex((free_size - block_size) as u32);
-            log("\n");
-            */
+            let buddy: *mut u8 = (block as usize ^ block_size) as *mut u8;
+            let mut prev: *mut *mut u8 = &mut self.free_lists[free_lists_index];
 
-            //log_hex(free_lists_index);
+            unsafe {
+                while *prev > block && *prev != buddy {
+                    prev = *prev as *mut *mut u8;
+                }
 
-            let p = block as *mut *mut u8;
-            unsafe { *p = self.free_lists[free_lists_index] };
-            self.free_lists[free_lists_index] = block;
-            // TODO insert block address in order; coalesce with buddy if present
+                if *prev == buddy && !buddy.is_null() {
+                    *prev = *(buddy as *mut *mut u8);
+                    let smaller = if block < buddy {block} else {buddy};
+                    self.free(smaller, block_size * 2);
+                } else {
+                    let p = block as *mut *mut u8;
+                    *p = *prev;
+                    *prev = block;
+                }
+            }
 
             if (free_size - block_size) >= 8 {
                 self.free(block_end, free_size - block_size);
