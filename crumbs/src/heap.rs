@@ -1,3 +1,4 @@
+use heap;
 use log::*;
 
 pub const SYSTEM_BITS: usize = usize::min_value().count_zeros() as usize;
@@ -9,19 +10,39 @@ extern {
 
 pub struct Heap {
     pub free_lists: [*mut u8; SYSTEM_BITS],
-    pub k_end: *mut u8,
-    pub h_end: *mut u8,
 }
 
 impl Heap {
     pub fn new() -> Heap {
         let k_end = unsafe { &mut _end as *mut u8 };
         let h_end = 0x3EFFFFFF as *mut u8;
+
+        log("Heap start: ");
+        log_hex(k_end as *mut _ as u32);
+        log("\n");
+        log("Heap end: ");
+        log_hex(h_end as *mut _ as u32);
+        log("\n");
+
         let free_lists = [0 as *mut u8; SYSTEM_BITS];
 
         let heap_start = (((k_end as usize - 1) / 8 + 1) * 8) as *mut u8;
+        let heap_size = unsafe { h_end.offset_from(heap_start) as usize + 1 };
 
-        Heap {free_lists, k_end: heap_start, h_end}
+        log("Heap start: ");
+        log_hex(heap_start as u32);
+        log("\n");
+        log("Heap size: ");
+        log_hex(heap_size as u32);
+        log("\n");
+
+        let mut heap = Heap { free_lists };
+
+        heap::Heap::free_blocks(&mut heap, heap_start, 8, heap_size);
+
+        heap.log_heap();
+
+        heap
     }
 
     pub fn free(&mut self, block: *mut u8, free_size: usize) {
@@ -52,6 +73,19 @@ impl Heap {
             if (free_size - block_size) >= 8 {
                 self.free(block_end, free_size - block_size);
             } // else shouldn't happen -- allocate in multiples of 8
+        }
+    }
+
+    fn free_blocks(heap: &mut Heap, start: *mut u8, curr_size: usize, total_size: usize) {  // for init only, consider better name
+        if total_size > 0 {
+            if (start as usize & curr_size) != 0 {
+                let size = if curr_size < total_size {curr_size} else {total_size};
+                heap.free(start, size);
+                let next = unsafe { start.offset(size as isize) };
+                heap::Heap::free_blocks(heap, next, curr_size * 2, total_size - size);
+            } else {
+                heap::Heap::free_blocks(heap, start, curr_size * 2, total_size);
+            }
         }
     }
 
