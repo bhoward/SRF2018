@@ -30,8 +30,8 @@ impl Heap {
             log("\n");
 
             let block_size: usize = usize::next_power_of_two(free_size / 2);
-            let block_end = unsafe { block.offset(block_size as isize) };
-            let free_lists_index = usize::trailing_zeros(block_size);
+            let block_end: *mut u8 = unsafe { block.offset(block_size as isize) };
+            let free_lists_index: usize = usize::trailing_zeros(block_size);
 
             /*
             log("\n");
@@ -42,12 +42,13 @@ impl Heap {
             //log_hex(free_lists_index);
 
             let p = block as *mut *mut u8;
-            unsafe { *p = self.free_lists[free_lists_index as usize] };
-            self.free_lists[free_lists_index as usize] = block;
+            unsafe { *p = self.free_lists[free_lists_index] };
+            self.free_lists[free_lists_index] = block;
+            // TODO insert block address in order; coalesce with buddy if present
 
             if (free_size - block_size) >= 8 {
-                self.free(block_end as *mut u8, free_size - block_size);
-            }
+                self.free(block_end, free_size - block_size);
+            } // else shouldn't happen -- allocate in multiples of 8
         }
     }
 
