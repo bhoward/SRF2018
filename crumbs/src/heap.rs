@@ -71,7 +71,7 @@ impl Heap {
         } else {
             log(" -> ");
             unsafe { log_hex(node as u32); }
-            unsafe { self.log_node(*node as *mut u8); }
+            unsafe { self.log_node(*(node as *mut *mut u8)); }
         }
     }
 }
