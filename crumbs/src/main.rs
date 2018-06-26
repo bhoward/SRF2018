@@ -78,6 +78,7 @@ fn main() {
     let h_end = heap.h_end;
 
     unsafe { heap.free(k_end, h_end.offset_from(k_end) as usize); }
+    heap.log_heap();
 
 /*
     // echo everything back
