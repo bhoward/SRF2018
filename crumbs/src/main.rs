@@ -65,7 +65,15 @@ fn main() {
     window.show(&lfb);
     window2.show(&lfb);
 
-    let heap = heap::Heap::new();
+    log("Heap init...\n");
+    let mut heap = heap::Heap::new();
+
+    log("Alloc test_block...\n");
+    let test_block = heap.alloc(160 as usize);
+
+    log_hex(test_block as u32);
+    log("\n");
+    heap.log_heap();
 
 /*
     // echo everything back

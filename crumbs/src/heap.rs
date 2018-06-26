@@ -89,6 +89,18 @@ impl Heap {
         }
     }
 
+    pub fn alloc(&mut self, req_size: usize) -> *mut u8 {
+        let block_size: usize = usize::next_power_of_two(req_size);
+        let free_lists_index: usize = usize::trailing_zeros(block_size) as usize;
+
+        let new_block: *mut u8 = self.free_lists[free_lists_index];
+
+        unsafe{ self.free_lists[free_lists_index] = *(new_block as *mut *mut u8); } // put block previously pointed to by the block we're allocing in free_lists
+        unsafe{ self.free_blocks(new_block.offset(req_size as isize), 8, block_size - req_size); }
+
+        return new_block;
+    }
+
     pub fn log_heap(&self) {
         log("Size: Node -> ...\n");
 
