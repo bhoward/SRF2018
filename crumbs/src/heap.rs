@@ -29,7 +29,7 @@ impl Heap {
         let heap_start = (((k_end as usize - 1) / 8 + 1) * 8) as *mut u8;
         let heap_size = unsafe { h_end.offset_from(heap_start) as usize + 1 };
 
-        log("Heap start: ");
+        log("Real start: ");
         log_hex(heap_start as u32);
         log("\n");
         log("Heap size: ");
@@ -38,7 +38,7 @@ impl Heap {
 
         let mut heap = Heap { free_lists };
 
-        heap::Heap::free_blocks(&mut heap, heap_start, 8, heap_size);
+        heap.free_blocks(heap_start, 8, heap_size);
 
         heap.log_heap();
 
@@ -76,15 +76,15 @@ impl Heap {
         }
     }
 
-    fn free_blocks(heap: &mut Heap, start: *mut u8, curr_size: usize, total_size: usize) {  // for init only, consider better name
+    fn free_blocks(&mut self, start: *mut u8, curr_size: usize, total_size: usize) {  // for init only, consider better name
         if total_size > 0 {
             if (start as usize & curr_size) != 0 {
                 let size = if curr_size < total_size {curr_size} else {total_size};
-                heap.free(start, size);
+                self.free(start, size);
                 let next = unsafe { start.offset(size as isize) };
-                heap::Heap::free_blocks(heap, next, curr_size * 2, total_size - size);
+                self.free_blocks(next, curr_size * 2, total_size - size);
             } else {
-                heap::Heap::free_blocks(heap, start, curr_size * 2, total_size);
+                self.free_blocks(start, curr_size * 2, total_size);
             }
         }
     }
