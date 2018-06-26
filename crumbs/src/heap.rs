@@ -38,7 +38,7 @@ impl Heap {
 
         let mut heap = Heap { free_lists };
 
-        heap.free_blocks(heap_start, 8, heap_size);
+        heap.free_unaligned(heap_start, 8, heap_size);
 
         heap.log_heap();
 
@@ -76,15 +76,15 @@ impl Heap {
         }
     }
 
-    fn free_blocks(&mut self, start: *mut u8, curr_size: usize, total_size: usize) {  // for init only, consider better name
+    fn free_unaligned(&mut self, start: *mut u8, curr_size: usize, total_size: usize) {  // for init only, consider better name
         if total_size > 0 {
             if (start as usize & curr_size) != 0 {
                 let size = if curr_size < total_size {curr_size} else {total_size};
                 self.free(start, size);
                 let next = unsafe { start.offset(size as isize) };
-                self.free_blocks(next, curr_size * 2, total_size - size);
+                self.free_unaligned(next, curr_size * 2, total_size - size);
             } else {
-                self.free_blocks(start, curr_size * 2, total_size);
+                self.free_unaligned(start, curr_size * 2, total_size);
             }
         }
     }
@@ -93,10 +93,10 @@ impl Heap {
         let block_size: usize = usize::next_power_of_two(req_size);
         let free_lists_index: usize = usize::trailing_zeros(block_size) as usize;
 
-        let new_block: *mut u8 = self.free_lists[free_lists_index];
+        let new_block: *mut u8 = self.free_lists[free_lists_index]; // TODO check for null
 
         unsafe{ self.free_lists[free_lists_index] = *(new_block as *mut *mut u8); } // put block previously pointed to by the block we're allocing in free_lists
-        unsafe{ self.free_blocks(new_block.offset(req_size as isize), 8, block_size - req_size); }
+        unsafe{ self.free_unaligned(new_block.offset(req_size as isize), 8, block_size - req_size); }
 
         return new_block;
     }
