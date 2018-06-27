@@ -17,13 +17,6 @@ impl Heap {
         let k_end = unsafe { &mut _end as *mut u8 };
         let h_end = 0x3EFFFFFF as *mut u8;
 
-        log("Heap start: ");
-        log_hex(k_end as *mut _ as u32);
-        log("\n");
-        log("Heap end: ");
-        log_hex(h_end as *mut _ as u32);
-        log("\n");
-
         let free_lists = [0 as *mut u8; SYSTEM_BITS];
 
         let heap_start = (((k_end as usize - 1) / 8 + 1) * 8) as *mut u8;
@@ -90,13 +83,21 @@ impl Heap {
     }
 
     pub fn alloc(&mut self, req_size: usize) -> *mut u8 {
-        let block_size: usize = usize::next_power_of_two(req_size);
-        let free_lists_index: usize = usize::trailing_zeros(block_size) as usize;
+        let mut block_size: usize = usize::next_power_of_two(req_size);
+        let mut free_lists_index: usize = usize::trailing_zeros(block_size) as usize;
 
-        let new_block: *mut u8 = self.free_lists[free_lists_index]; // TODO check for null
+        while free_lists_index < SYSTEM_BITS && self.free_lists[free_lists_index].is_null() {
+            free_lists_index += 1;
+        }
+
+        if free_lists_index == SYSTEM_BITS {
+            return 0 as *mut u8;
+        }
+
+        let new_block: *mut u8 = self.free_lists[free_lists_index]; 
 
         unsafe{ self.free_lists[free_lists_index] = *(new_block as *mut *mut u8); } // put block previously pointed to by the block we're allocing in free_lists
-        unsafe{ self.free_unaligned(new_block.offset(req_size as isize), 8, block_size - req_size); }
+        unsafe{ self.free_unaligned(new_block.offset(req_size as isize), 8, (1 << free_lists_index) - req_size); } //(1 << free_lists_index) recompute block_size
 
         return new_block;
     }

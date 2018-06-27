@@ -69,10 +69,16 @@ fn main() {
     let mut heap = heap::Heap::new();
 
     log("Alloc test_block...\n");
-    let test_block = heap.alloc(160 as usize);
+    const test_block_size: usize = 160000000 as usize;
+    let test_block = heap.alloc(test_block_size);
 
     log_hex(test_block as u32);
     log("\n");
+    heap.log_heap();
+    log("\n");
+
+    log("free(test_block, test_block_size)\n");
+    heap.free(test_block, test_block_size);
     heap.log_heap();
 
 /*
