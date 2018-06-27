@@ -69,20 +69,23 @@ fn main() {
     let mut heap = heap::Heap::new();
 
     log("Alloc test_block...\n");
-    let test_block = heap.alloc(160000000);
-    let test_block_2 = heap.alloc(2398);
-    let test_block_3 = heap.alloc(12981);
+    let test_block = heap.alloc(2398) as *mut u32;
 
-    log_hex(test_block as u32);
+    unsafe { *(test_block) = 0xCAFEBABE };
+
     log("\n");
     heap.log_heap();
     log("\n");
 
-    log("free(test_blocks, test_block_sizes)\n");
-    heap.free(test_block_2, 2398);
-    heap.free(test_block_3, 12981);
-    heap.free(test_block, 160000000);
+    unsafe { log_hex(*test_block); }
+    log("\n");
+
+    let new_test_block = heap.realloc(test_block as *mut u8, 2398, 344212) as *mut u32;
     heap.log_heap();
+    
+    unsafe { log_hex(*new_test_block); }
+
+    log("\n");
 
 /*
     // echo everything back
