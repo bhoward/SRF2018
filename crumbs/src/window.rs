@@ -1,25 +1,23 @@
 use lfb::Lfb;
 use colors::*;
+use window_manager::WindowManager;
 
-const TITLE_BAR_HEIGHT: u32 = 16;
+use alloc::string::String;
+use alloc::boxed::Box;
+use alloc::boxed::PinBox;
+
+pub const TITLE_BAR_HEIGHT: u32 = 16;
 
 pub struct Window {
-    title: &'static str,
-    x: u32,
-    y: u32,
-    width: u32,
-    height: u32,
+    pub title: String,
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl Window {
-    pub fn new(title: &'static str, x: u32, y: u32, width: u32, height: u32) -> Window {
-        Window {title, x, y, width, height}
-    }
-
-    pub fn show(&self, lfb: &Lfb) {
-        lfb.rect(self.x, self.y, self.width, TITLE_BAR_HEIGHT, TITLE_BAR_COLOR);
-        lfb.rect(self.x, self.y + TITLE_BAR_HEIGHT, self.width, self.height, WHITE_PIXEL);
-
-        lfb.print(self.x, self.y, self.title, BLACK_PIXEL);
+    pub fn new(title: &str, x: u32, y: u32, width: u32, height: u32) -> Window {
+        Window {title: String::from(title), x, y, width, height}
     }
 }
