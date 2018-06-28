@@ -27,11 +27,15 @@
 #![feature(asm)]
 #![feature(const_int_ops)]
 #![feature(ptr_offset_from)]
+#![feature(allocator_api, heap_api)]
+#![feature(alloc, extern_prelude, lang_items)]
 
 extern crate raspi3_glue;
 extern crate volatile_register;
+extern crate rlibc;
 
-const MMIO_BASE: u32 = 0x3F00_0000;
+#[macro_use]
+extern crate alloc;
 
 mod gpio;
 mod mbox;
@@ -43,12 +47,24 @@ mod colors;
 mod window_manager;
 mod heap;
 mod log;
+mod oom;
 
 use colors::*;
 use log::*;
+use heap::*;
+
+const MMIO_BASE: u32 = 0x3F00_0000;
+
+#[global_allocator]
+static GLOBAL: CrumbsAllocator = CrumbsAllocator;
+
+pub static mut HEAP: Heap = Heap {
+    free_lists: [0 as *mut u8; SYSTEM_BITS]
+};
 
 fn main() {
     log_init();
+    unsafe { HEAP.init(); }
 
     // set up linear frame buffer
     let lfb = lfb::Lfb::new().expect("unable to construct frame buffer");
@@ -63,8 +79,8 @@ fn main() {
     let window = window::Window::new("Test Window", 10, 20, 250, 100);
     let window2 = window::Window::new("Test Window 2", 100, 70, 280, 150);
     window.show(&lfb);
-    window2.show(&lfb);
 
+/*
     log("Heap init...\n");
     let mut heap = heap::Heap::new();
 
@@ -86,6 +102,36 @@ fn main() {
     unsafe { log_hex(*new_test_block); }
 
     log("\n");
+*/
+
+    window2.show(&lfb);
+
+    {
+        use alloc::boxed::Box;
+        let b = Box::new(42);
+        log("Box contents: ");
+        log_hex(*b);
+        log("\n");
+        let bp = Box::into_raw(b);
+        log("Box address: ");
+        log_hex(bp as u32);
+        log("\n");
+
+        unsafe { HEAP.log_heap(); }
+
+        let b = unsafe { Box::from_raw(bp) };
+    }
+
+    unsafe { HEAP.log_heap(); }
+
+    let mut vec_test = vec![1,2,3,4,5,6,7];
+    vec_test[3] = 42;
+    for i in &vec_test {
+        log_hex(i as *const _ as u32);
+        log("\n");
+    }
+    unsafe { HEAP.log_heap(); }
+
 
 /*
     // echo everything back
