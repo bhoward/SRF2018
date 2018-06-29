@@ -28,6 +28,9 @@ TARGET = aarch64-raspi3-none-elf
 SERIAL_DEVICE = /dev/tty.SLAB_USBtoUART
 RASPBOOTCOM = ../raspbootin/raspbootcom/raspbootcom $(SERIAL_DEVICE)
 
+OBJCOPY = cargo objcopy --
+OBJCOPY_PARAMS = --strip-all -O binary
+
 all: clean kernel8.img
 
 target/$(TARGET)/debug/kernel8: src/*.rs
@@ -45,7 +48,7 @@ kernel8: target/$(TARGET)/release/kernel8
 endif
 
 kernel8.img: kernel8
-	aarch64-unknown-linux-gnueabi-objcopy -O binary -S kernel8 kernel8.img
+	$(OBJCOPY) $(OBJCOPY_PARAMS) $< kernel8.img
 
 qemu: kernel8.img
 	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
