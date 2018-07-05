@@ -72,11 +72,8 @@ impl Font {
     }
 
     pub fn get_glyph(&self, c: char) -> Glyph {
-        let n = c as u32;
-
-        if n >= self.numglyphs {
-            panic!("character out of range"); // TODO handle this better
-        }
+        let c = c as u32;
+        let n = if c < self.numglyphs { c } else { '\x00' as u32 };
 
         let glyph_offset = (n * self.bytes_per_glyph) as isize;
         let data = unsafe { self.glyph_base.offset(glyph_offset) };
