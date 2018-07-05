@@ -3,7 +3,6 @@ use colors::*;
 use window::*;
 
 use alloc::vec::Vec;
-use alloc::boxed::Box;
 use alloc::boxed::PinBox;
 
 pub struct WindowManager {
@@ -33,9 +32,25 @@ impl WindowManager {
 
     fn draw_window(&self, window: &Window) {
         self.lfb.rect(window.x, window.y, window.width, TITLE_BAR_HEIGHT, TITLE_BAR_COLOR);
-        self.lfb.rect(window.x, window.y + TITLE_BAR_HEIGHT, window.width, window.height, WHITE_PIXEL);
+        self.lfb.cool_rect(window.x, window.y + TITLE_BAR_HEIGHT, window.width, window.height, WHITE_PIXEL);
 
         self.lfb.print(window.x, window.y, window.title.as_str(), BLACK_PIXEL);
+    }
+
+    // This is purely an experiment...
+    pub fn test(&self) {
+        self.lfb.line(160, 100, 200, 100, RED_PIXEL);
+        self.lfb.line(200, 100, 240, 140, GREEN_PIXEL);
+        self.lfb.line(240, 140, 240, 180, BLUE_PIXEL);
+        self.lfb.line(240, 180, 200, 220, BLACK_PIXEL);
+        self.lfb.line(200, 220, 160, 220, RED_PIXEL);
+        self.lfb.line(160, 220, 120, 180, GREEN_PIXEL);
+        self.lfb.line(120, 180, 120, 140, BLUE_PIXEL);
+        self.lfb.line(120, 140, 160, 100, BLACK_PIXEL);
+        self.lfb.line(120, 140, 240, 180, RED_PIXEL);
+        self.lfb.line(120, 180, 240, 140, GREEN_PIXEL);
+        self.lfb.line(160, 100, 200, 220, BLUE_PIXEL);
+        self.lfb.line(200, 100, 160, 220, BLACK_PIXEL);
     }
 }
 

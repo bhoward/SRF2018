@@ -27,6 +27,7 @@ use font::Font;
 use colors::*;
 
 use core::sync::atomic::{compiler_fence, Ordering};
+use core::cmp::{min, max};
 
 #[derive(Debug)]
 pub enum LfbError {
@@ -36,7 +37,7 @@ pub enum LfbError {
 pub struct Lfb { // TODO change these types
     pub width: u32,
     pub height: u32,
-    pub pitch: u32,
+    pub pixels_per_line: u32,
     lfb: *mut u32,
     pub font: Font,
 }
@@ -104,15 +105,15 @@ impl Lfb {
         let width = mbox.buffer[5];
         let height = mbox.buffer[6];
         let pitch = mbox.buffer[33];
+        let pixels_per_line = pitch / 4;
         let lfb = (mbox.buffer[28] & 0x3FFF_FFFF) as *mut u32;
         let font = Font::new();
 
-        Ok(Lfb { width, height, pitch, lfb, font })
+        Ok(Lfb { width, height, pixels_per_line, lfb, font })
    }
 
     pub fn print(&self, x: u32, y: u32, msg: &str, color: u32) {
         let mut x = x;
-        let mut y = y;
 
         // TODO check bounds on x and y
         for c in msg.chars() {
@@ -126,35 +127,117 @@ impl Lfb {
 
         for row in 0 .. self.font.height {
             for col in 0 .. self.font.width {
-                let pixel = (y + row) * self.pitch / 4 + x + col;
-
-                unsafe {
-                    if glyph.bit_at(row, col) {
-                        *self.lfb.offset(pixel as isize) = color;
-                    }
+                if glyph.bit_at(row, col) {
+                    self.set_pixel(x + col, y + row, color, 1.0);
                 }
             }
         }
     }
 
-    pub fn line(&self) {
-        // TODO this is just for testing right now...
-        for i in 0 .. 100 {
-            unsafe { *self.lfb.offset(i as isize) = WHITE_PIXEL };
+    fn set_pixel(&self, x: u32, y: u32, color: u32, alpha: f64) {
+        let pixel: isize = (y * self.pixels_per_line + x) as isize;
+        if alpha == 1.0 {
+            unsafe {
+                *self.lfb.offset(pixel) = color;
+            }
+        } else {
+            let curr_color = unsafe { *self.lfb.offset(pixel) };
+            let curr_red = curr_color & RED_PIXEL;
+            let curr_green = curr_color & GREEN_PIXEL;
+            let curr_blue = curr_color & BLUE_PIXEL;
+            let red = color & RED_PIXEL;
+            let green = color & GREEN_PIXEL;
+            let blue = color & BLUE_PIXEL;
+            let new_red = (curr_red as f64) * (1.0 - alpha) + (red as f64) * alpha;
+            let new_green = (curr_green as f64) * (1.0 - alpha) + (green as f64) * alpha;
+            let new_blue = (curr_blue as f64) * (1.0 - alpha) + (blue as f64) * alpha;
+            let new_color =
+                  (new_red as u32) & RED_PIXEL
+                | (new_green as u32) & GREEN_PIXEL
+                | (new_blue as u32) & BLUE_PIXEL;
+            unsafe {
+                *self.lfb.offset(pixel) = new_color;
+            }
         }
+    }
 
-        let loc = self.width * 10;
-
-        for i in loc .. loc + 100 {
-            unsafe { *self.lfb.offset(i as isize) = WHITE_PIXEL };
+    pub fn line(&self, x0: u32, y0: u32, x1: u32, y1: u32, color: u32) {
+        let dx = (x1 as i32) - (x0 as i32);
+        let dy = (y1 as i32) - (y0 as i32);
+        if dx == 0 {
+            // vertical line
+            let top = min(y0, y1);
+            let bot = max(y0, y1);
+            for y in top .. bot {
+                self.set_pixel(x0, y, color, 1.0);
+            }
+        } else if dy == 0 {
+            // horizontal line
+            let left = min(x0, x1);
+            let right = max(x0, x1);
+            for x in left .. right {
+                self.set_pixel(x, y0, color, 1.0);
+            }
+        } else if dx.abs() == dy.abs() {
+            // diagonal line
+            let left = min(x0, x1);
+            let right = max(x0, x1);
+            let y_step = dy / dx; // +1/-1
+            let mut y = if left == x0 { y0 } else { y1 };
+            for x in left .. right {
+                self.set_pixel(x, y, color, 1.0);
+                y = ((y as i32) + y_step) as u32;
+            }
+        } else if dx.abs() > dy.abs() {
+            // slope < 1
+            let left = min(x0, x1);
+            let right = max(x0, x1);
+            let y_step = (dy as f64) / (dx as f64);
+            let mut y = if left == x0 { y0 as f64 } else { y1 as f64 };
+            for x in left .. right {
+                let y_int = y as u32;
+                let frac = y - (y_int as f64);
+                if frac == 0.0 {
+                    self.set_pixel(x, y_int, color, 1.0);
+                } else {
+                    self.set_pixel(x, y_int, color, 1.0 - frac);
+                    self.set_pixel(x, y_int + 1, color, frac);
+                }
+                y += y_step;
+            }
+        } else {
+            // slope > 1
+            let top = min(y0, y1);
+            let bot = max(y0, y1);
+            let x_step = (dx as f64) / (dy as f64);
+            let mut x = if top == y0 { x0 as f64 } else { x1 as f64 };
+            for y in top .. bot {
+                let x_int = x as u32;
+                let frac = x - (x_int as f64);
+                if frac == 0.0 {
+                    self.set_pixel(x_int, y, color, 1.0);
+                } else {
+                    self.set_pixel(x_int, y, color, 1.0 - frac);
+                    self.set_pixel(x_int + 1, y, color, frac);
+                }
+                x += x_step;
+            }
         }
     }
 
     pub fn rect(&self, x: u32, y: u32, width: u32, length: u32, color: u32) {
         for curr_y in y .. (y + length) {
             for curr_x in x .. (x + width) {
-                let curr_mem_loc = (curr_y * (self.pitch / 4)) + curr_x;
-                unsafe { *self.lfb.offset(curr_mem_loc as isize) = color; }
+                self.set_pixel(curr_x, curr_y, color, 1.0);
+            }
+        }
+    }
+
+    pub fn cool_rect(&self, x: u32, y: u32, width: u32, height: u32, color: u32) {
+        for curr_y in y .. (y + height) {
+            for curr_x in x .. (x + width) {
+                let alpha = 1.0 - (((curr_y - y) * (curr_x - x)) as f64) / ((height * width) as f64);
+                self.set_pixel(curr_x, curr_y, color, alpha);
             }
         }
     }

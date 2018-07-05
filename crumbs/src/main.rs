@@ -50,11 +50,11 @@ mod heap;
 mod log;
 mod oom;
 
-use colors::*;
+pub use oom::rust_oom;
+
 use log::*;
 use heap::*;
 
-use alloc::boxed::Box;
 use alloc::boxed::PinBox;
 
 const MMIO_BASE: u32 = 0x3F00_0000;
@@ -80,6 +80,8 @@ fn main() {
     let windows = vec![window, window2, window3];
 
     window_manager.show(windows);
+
+    window_manager.test();
 
     unsafe { HEAP.log_heap(); }
 }

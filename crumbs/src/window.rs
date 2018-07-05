@@ -1,10 +1,4 @@
-use lfb::Lfb;
-use colors::*;
-use window_manager::WindowManager;
-
 use alloc::string::String;
-use alloc::boxed::Box;
-use alloc::boxed::PinBox;
 
 pub const TITLE_BAR_HEIGHT: u32 = 16;
 
