@@ -236,7 +236,7 @@ impl Lfb {
     pub fn cool_rect(&self, x: u32, y: u32, width: u32, height: u32, color: u32) {
         for curr_y in y .. (y + height) {
             for curr_x in x .. (x + width) {
-                let alpha = 1.0 - (((curr_y - y) * (curr_x - x)) as f64) / ((height * width) as f64);
+                let alpha = 1.0 - 0.75 * (((curr_y - y) * (curr_x - x)) as f64) / ((height * width) as f64);
                 self.set_pixel(curr_x, curr_y, color, alpha);
             }
         }
