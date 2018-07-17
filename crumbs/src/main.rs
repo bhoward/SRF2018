@@ -31,12 +31,15 @@
 #![feature(alloc, extern_prelude, lang_items)]
 #![feature(pin)]
 
+extern crate cortex_a;
 extern crate raspi3_glue;
-extern crate volatile_register;
 extern crate rlibc;
 
 #[macro_use]
 extern crate alloc;
+
+#[macro_use]
+extern crate register;
 
 mod gpio;
 mod mbox;
