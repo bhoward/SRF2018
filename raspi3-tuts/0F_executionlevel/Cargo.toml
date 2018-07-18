@@ -6,6 +6,7 @@ build = "build.rs"
 
 [dependencies]
 raspi3_glue = { path = "raspi3_glue" }
-cortex-a = "1.0.0"
+# cortex-a = "1.0.0"
+cortex-a = { path = "../../../cortex-a" }
 register = "0.1.1"
 rlibc = "1.0.0"
