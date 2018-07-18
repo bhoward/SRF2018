@@ -31,6 +31,9 @@ extern crate cortex_a;
 extern crate panic_abort;
 extern crate r0;
 
+#[macro_use]
+extern crate register;
+
 #[lang = "start"]
 extern "C" fn start<T>(user_main: fn() -> T, _argc: isize, _argv: *const *const u8) -> isize
 where
@@ -96,14 +99,14 @@ pub extern "C" fn _boot_cores() -> ! {
             }
             
             if el == 2 {
-                SP_EL1.set(0x80_000);
+                // SP_EL1.set(0x80_000);
 
                 // enable CNTP for EL1
-                CNTHCTL_EL2.set(CNTHCTL_EL2.get() | CNTHCTL_EL2::EL1PCTEN | CNTHCTL_EL2::EL1PCEN);
+                // CNTHCTL_EL2.modify(CNTHCTL_EL2::EL1PCTEN | CNTHCTL_EL2::EL1PCEN);
                 CNTVOFF_EL2.set(0);
 
                 // enable AArch64 in EL1
-                HCR_EL2.set(HCR_EL2.get() | HCR_EL2::RW);
+                HCR_EL2.modify(HCR_EL2::RW::EL1_AArch64);
             }
 
             SP.set(0x80_000);

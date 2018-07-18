@@ -30,14 +30,16 @@
 
 extern crate cortex_a;
 extern crate raspi3_glue;
-extern crate volatile_register;
 extern crate rlibc; // provides memset
+
+#[macro_use]
+extern crate register;
 
 mod gpio;
 mod mbox;
 mod uart;
 
-use cortex_a::register;
+use cortex_a::regs::currentel::*;
 
 const MMIO_BASE: u32 = 0x3F00_0000;
 
@@ -53,7 +55,7 @@ fn main() {
     uart.getc(); // Press a key first before being greeted
     uart.puts("Hello Rustacean!\n");
 
-    let el = (register::CurrentEL::read_raw() >> 2) & 0x3;
+    let el = (CurrentEL.get() >> 2) & 0x3;
 
     uart.puts("Current EL is: ");
     uart.hex(el);
