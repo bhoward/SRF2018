@@ -35,25 +35,25 @@ all: clean kernel8.img
 
 target/$(TARGET)/debug/kernel8: src/*.rs
 	RUST_TARGET_PATH=$(shell pwd) xargo build --target=$(TARGET)
+	cp $@ .
 
 target/$(TARGET)/release/kernel8: src/*.rs
 	RUST_TARGET_PATH=$(shell pwd) xargo build --target=$(TARGET) --release
+	cp $@ .
 
 ifeq ($(DEBUG),1)
 kernel8: target/$(TARGET)/debug/kernel8
-	cp $< .
 else
 kernel8: target/$(TARGET)/release/kernel8
-	cp $< .
 endif
 
 kernel8.img: kernel8
 	$(OBJCOPY) $(OBJCOPY_PARAMS) $< kernel8.img
 
-qemu: kernel8.img
+qemu: clean kernel8.img
 	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
 
-raspboot: kernel8.img
+raspboot: clean kernel8.img
 	$(RASPBOOTCOM) kernel8.img
 
 clippy:

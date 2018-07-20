@@ -25,6 +25,7 @@
  */
 
 #![feature(lang_items)]
+#![feature(asm)]
 #![no_std]
 
 extern crate cortex_a;
@@ -106,9 +107,20 @@ pub extern "C" fn _boot_cores() -> ! {
                 HCR_EL2.modify(HCR_EL2::RW::SET + HCR_EL2::SWIO::SET);
 
                 // change execution level to EL1
-                SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
-                ELR_EL2.set(???); // address of code to "return" to
-                asm::eret();
+                // SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
+                // ELR_EL2.set(???); // address of code to "return" to
+                // asm::eret();
+                // TODO this doesn't work yet...
+                unsafe {
+                    asm!("
+                        mov x2, #0x3c4
+                        msr spsr_el2, x2
+                        adr x2, 1f
+                        msr elr_el2, x2
+                        eret
+                    1:  nop
+                    " ::: "x2" : "volatile")
+                }
             }
 
             SP.set(0x80_000);
