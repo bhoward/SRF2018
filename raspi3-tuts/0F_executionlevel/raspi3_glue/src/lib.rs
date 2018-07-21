@@ -86,7 +86,8 @@ pub extern "C" fn _boot_cores() -> ! {
         regs::sp_el1::*,
         regs::cnthctl_el2::*,
         regs::cntvoff_el2::*,
-        regs::hcr_el2::*
+        regs::hcr_el2::*,
+        regs::cpacr_el1::*
     };
 
     match MPIDR_EL1.get() & 0x3 {
@@ -105,6 +106,9 @@ pub extern "C" fn _boot_cores() -> ! {
 
                 // enable AArch64 in EL1
                 HCR_EL2.modify(HCR_EL2::RW::SET + HCR_EL2::SWIO::SET);
+
+                // enable floating-point and SIMD in EL0/1
+                CPACR_EL1.modify(CPACR_EL1::FPEN::Enable);
 
                 // change execution level to EL1
                 // SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
