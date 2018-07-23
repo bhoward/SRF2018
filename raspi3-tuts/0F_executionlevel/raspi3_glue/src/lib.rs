@@ -114,7 +114,7 @@ pub extern "C" fn _boot_cores() -> ! {
                 // SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
                 // ELR_EL2.set(???); // address of code to "return" to
                 // asm::eret();
-                // TODO this doesn't work yet...
+                // TODO clean this up
                 unsafe {
                     asm!("
                         mov x2, #0x3c4
