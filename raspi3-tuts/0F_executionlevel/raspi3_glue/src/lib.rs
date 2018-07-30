@@ -108,7 +108,7 @@ pub extern "C" fn _boot_cores() -> ! {
                 HCR_EL2.modify(HCR_EL2::RW::SET + HCR_EL2::SWIO::SET);
 
                 // enable floating-point and SIMD in EL0/1
-                CPACR_EL1.modify(CPACR_EL1::FPEN::Enable);
+                CPACR_EL1.modify(CPACR_EL1::FPEN.val(3));
 
                 // change execution level to EL1
                 // SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
