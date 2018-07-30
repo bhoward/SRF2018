@@ -94,10 +94,28 @@ pub extern "C" fn _boot_cores() -> ! {
         0 => {
             let el = (CurrentEL.get() >> 2) & 0x3;
             if el == 3 {
-                // TODO shouldn't happen
+                // this usually won't happen, unless requested in config.txt
+                // first change exception level to EL2
+                // SCR_EL3.set(0x5B1); // RW+HCE+SMD+NS
+                // SPSR_EL3.set(0x3C9); // D+A+I+F+EL2h
+                // ELR_EL3.set(???); // address of code to "return" to
+                // asm::eret();
+                // TODO clean this up
+                unsafe {
+                    asm!("
+                        mov x2, #0x5b1
+                        msr scr_el3, x2
+                        mov x2, #0x3c9
+                        msr spsr_el3, x2
+                        adr x2, 2f
+                        msr elr_el3, x2
+                        eret
+                    2:  nop
+                    " ::: "x2" : "volatile")
+                }
             }
             
-            if el == 2 {
+            if el >= 2 {
                 SP_EL1.set(0x80_000);
 
                 // enable CNTP for EL1
@@ -110,7 +128,7 @@ pub extern "C" fn _boot_cores() -> ! {
                 // enable floating-point and SIMD in EL0/1
                 CPACR_EL1.modify(CPACR_EL1::FPEN.val(3));
 
-                // change execution level to EL1
+                // change exception level to EL1
                 // SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
                 // ELR_EL2.set(???); // address of code to "return" to
                 // asm::eret();
