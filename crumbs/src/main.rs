@@ -52,11 +52,15 @@ mod window_manager;
 mod heap;
 mod log;
 mod oom;
+mod svc;
 
 pub use oom::rust_oom;
 
 use log::*;
+use svc::*;
 use heap::*;
+
+use cortex_a::asm;
 
 use alloc::boxed::PinBox;
 
@@ -71,6 +75,7 @@ pub static mut HEAP: Heap = Heap {
 
 fn main() {
     log_init();
+    svc_init();
     unsafe { HEAP.init(); }
 
     let lfb_box = PinBox::new(lfb::Lfb::new().expect("unable to construct frame buffer"));
@@ -87,6 +92,53 @@ fn main() {
     window_manager.test();
 
     unsafe { HEAP.log_heap(); }
+
+    unsafe {
+        asm!("
+            mov     x0, #42
+            mov     x1, #37
+            svc     #1
+        " :::: "volatile")
+    }
+
+    log("Done\n");
+
+    loop {} // never return...
 }
 
+#[no_mangle]
+pub extern "C" fn exc_handler(exc_type: u32, esr: u32) {
+    let ec = (esr >> 26);
 
+    if exc_type == 0 && ec == 0x15 {
+        // SVC call
+        let op = esr & 0xFFFF; // immediate argument
+        log("SVC ");
+        log_hex(op);
+        log(" handled\n");
+
+        // TODO have to know how many bytes exc_handler reserves on stack...
+        let x0: u64;
+        unsafe {
+            asm!("ldr $0, [sp, 48]" : "=r"(x0) ::: "volatile")
+        }
+
+        let x1: u64;
+        unsafe {
+            asm!("ldr $0, [sp, 56]" : "=r"(x1) ::: "volatile")
+        }
+
+        log("X0 was ");
+        log_hex(x0 as u32);
+        log("\n");
+        log("X1 was ");
+        log_hex(x1 as u32);
+        log("\n");
+    } else {
+        log("In exc_handler: type = ");
+        log_hex(exc_type);
+        log(", esr = ");
+        log_hex(esr);
+        log("\n");
+    }
+}

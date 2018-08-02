@@ -62,3 +62,6 @@ clippy:
 clean:
 	cargo clean
 	rm -f kernel8
+
+dump:
+	cargo objdump --target aarch64-raspi3-none-elf.json -- -disassemble -print-imm-hex kernel8
