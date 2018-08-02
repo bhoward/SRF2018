@@ -95,8 +95,7 @@ fn main() {
 
     unsafe {
         asm!("
-            mov     x0, #42
-            mov     x1, #37
+            mov     x2, #42
             svc     #1
         " :::: "volatile")
     }
@@ -107,7 +106,7 @@ fn main() {
 }
 
 #[no_mangle]
-pub extern "C" fn exc_handler(exc_type: u32, esr: u32) {
+pub extern "C" fn exc_handler(exc_type: u32, esr: u32, x2: u64) {
     let ec = (esr >> 26);
 
     if exc_type == 0 && ec == 0x15 {
@@ -117,22 +116,8 @@ pub extern "C" fn exc_handler(exc_type: u32, esr: u32) {
         log_hex(op);
         log(" handled\n");
 
-        // TODO have to know how many bytes exc_handler reserves on stack...
-        let x0: u64;
-        unsafe {
-            asm!("ldr $0, [sp, 48]" : "=r"(x0) ::: "volatile")
-        }
-
-        let x1: u64;
-        unsafe {
-            asm!("ldr $0, [sp, 56]" : "=r"(x1) ::: "volatile")
-        }
-
-        log("X0 was ");
-        log_hex(x0 as u32);
-        log("\n");
-        log("X1 was ");
-        log_hex(x1 as u32);
+        log("X2 was ");
+        log_hex(x2 as u32);
         log("\n");
     } else {
         log("In exc_handler: type = ");
