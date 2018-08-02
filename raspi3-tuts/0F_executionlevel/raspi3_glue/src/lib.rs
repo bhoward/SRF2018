@@ -87,7 +87,10 @@ pub extern "C" fn _boot_cores() -> ! {
         regs::cnthctl_el2::*,
         regs::cntvoff_el2::*,
         regs::hcr_el2::*,
-        regs::cpacr_el1::*
+        regs::cpacr_el1::*,
+        regs::scr_el3::*,
+        regs::spsr_el3::*,
+        regs::spsr_el2::*
     };
 
     match MPIDR_EL1.get() & 0x3 {
@@ -96,17 +99,17 @@ pub extern "C" fn _boot_cores() -> ! {
             if el == 3 {
                 // this usually won't happen, unless requested in config.txt
                 // first change exception level to EL2
-                // SCR_EL3.set(0x5B1); // RW+HCE+SMD+NS
-                // SPSR_EL3.set(0x3C9); // D+A+I+F+EL2h
+
+                // enable AArch64 in EL2
+                SCR_EL3.set(0x5B1); // RW+HCE+SMD+NS
+
+                SPSR_EL3.set(0x3C9); // D+A+I+F+EL2h
+
                 // ELR_EL3.set(???); // address of code to "return" to
                 // asm::eret();
                 // TODO clean this up
                 unsafe {
                     asm!("
-                        mov x2, #0x5b1
-                        msr scr_el3, x2
-                        mov x2, #0x3c9
-                        msr spsr_el3, x2
                         adr x2, 2f
                         msr elr_el3, x2
                         eret
@@ -128,15 +131,14 @@ pub extern "C" fn _boot_cores() -> ! {
                 // enable floating-point and SIMD in EL0/1
                 CPACR_EL1.modify(CPACR_EL1::FPEN.val(3));
 
+                SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
+
                 // change exception level to EL1
-                // SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
                 // ELR_EL2.set(???); // address of code to "return" to
                 // asm::eret();
                 // TODO clean this up
                 unsafe {
                     asm!("
-                        mov x2, #0x3c4
-                        msr spsr_el2, x2
                         adr x2, 1f
                         msr elr_el2, x2
                         eret
