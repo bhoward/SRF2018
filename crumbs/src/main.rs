@@ -63,6 +63,7 @@ use heap::*;
 use cortex_a::asm;
 
 use alloc::boxed::PinBox;
+use alloc::string::String;
 
 const MMIO_BASE: u32 = 0x3F00_0000;
 
@@ -87,7 +88,9 @@ fn main() {
 
     window_manager.test();
 
-    log_heap();
+    // log_heap();
+
+    log("About to send a message\n");
 
     call_svc1("hello");
 
@@ -107,13 +110,13 @@ pub extern "C" fn exc_handler(exc_type: u32, esr: u32, x2: u64) {
         log_hex(op);
         log(" handled\n");
 
-        log("X2 was ");
+        log("X2 is ");
         log_hex(x2 as u32);
         log("\n");
 
-        let msg = unsafe { *(x2 as *const &str) };
+        let msg = String::from(unsafe { *(x2 as *const &str) });
         log("Message is ");
-        log(msg);
+        log(&msg);
         log("\n");
     } else {
         log("In exc_handler: type = ");

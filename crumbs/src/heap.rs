@@ -50,7 +50,7 @@ impl Heap {
 
         self.free_unaligned(heap_start, 8, heap_size);
 
-        self.log_heap();
+        // self.log_heap();
     }
 
     pub fn free(&mut self, block: *mut u8, free_size: usize) {
