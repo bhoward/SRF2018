@@ -15,40 +15,57 @@ pub fn svc_init() {
                 // synchronous
                 .align  7
                 stp     x0, x1, [sp, #-16]!
+                stp     x9, x30, [sp, #-16]!
                 mov     x0, #0
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
                 // IRQ
                 .align  7
                 stp     x0, x1, [sp, #-16]!
+                stp     x9, x30, [sp, #-16]!
                 mov     x0, #1
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
                 // FIQ
                 .align  7
                 stp     x0, x1, [sp, #-16]!
+                stp     x9, x30, [sp, #-16]!
                 mov     x0, #2
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
                 // SError
                 .align  7
                 stp     x0, x1, [sp, #-16]!
+                stp     x9, x30, [sp, #-16]!
                 mov     x0, #3
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
             1:  nop
         " ::: "x16" : "volatile")
+    }
+}
+
+pub fn call_svc1(arg: u64) {
+    unsafe {
+        asm!("
+            mov     x2, $0
+            svc     #1
+        " :: "r"(arg) : "x2" : "volatile")
     }
 }

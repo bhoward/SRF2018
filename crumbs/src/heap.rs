@@ -1,6 +1,5 @@
 use heap;
 use log::*;
-use ::HEAP;
 
 use core::alloc::{GlobalAlloc, Layout};
 
@@ -13,6 +12,18 @@ extern {
 
 pub struct Heap {
     pub free_lists: [*mut u8; SYSTEM_BITS],
+}
+
+pub static mut HEAP: Heap = Heap {
+    free_lists: [0 as *mut u8; SYSTEM_BITS]
+};
+
+pub fn heap_init() {
+    unsafe { HEAP.init(); }
+}
+
+pub fn log_heap() {
+    unsafe { HEAP.log_heap(); }
 }
 
 pub struct CrumbsAllocator;

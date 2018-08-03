@@ -69,14 +69,10 @@ const MMIO_BASE: u32 = 0x3F00_0000;
 #[global_allocator]
 static GLOBAL: CrumbsAllocator = CrumbsAllocator;
 
-pub static mut HEAP: Heap = Heap {
-    free_lists: [0 as *mut u8; SYSTEM_BITS]
-};
-
 fn main() {
     log_init();
     svc_init();
-    unsafe { HEAP.init(); }
+    heap_init();
 
     let lfb_box = PinBox::new(lfb::Lfb::new().expect("unable to construct frame buffer"));
     let window_manager = window_manager::WindowManager::new(lfb_box);
@@ -91,14 +87,9 @@ fn main() {
 
     window_manager.test();
 
-    unsafe { HEAP.log_heap(); }
+    log_heap();
 
-    unsafe {
-        asm!("
-            mov     x2, #42
-            svc     #1
-        " :::: "volatile")
-    }
+    call_svc1(42);
 
     log("Done\n");
 
