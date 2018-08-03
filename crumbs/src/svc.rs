@@ -10,15 +10,17 @@ pub fn svc_init() {
             // important, code has to be properly aligned
                 .align 11
             
-            // TODO need to preserve x0..x4
+            // TODO figure out better which registers to preserve
             _vectors:
                 // synchronous
                 .align  7
                 stp     x0, x1, [sp, #-16]!
                 stp     x9, x30, [sp, #-16]!
+                str     x11, [sp, #-8]!
                 mov     x0, #0
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldr     x11, [sp], #8
                 ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
@@ -27,9 +29,11 @@ pub fn svc_init() {
                 .align  7
                 stp     x0, x1, [sp, #-16]!
                 stp     x9, x30, [sp, #-16]!
+                str     x11, [sp, #-8]!
                 mov     x0, #1
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldr     x11, [sp], #8
                 ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
@@ -38,9 +42,11 @@ pub fn svc_init() {
                 .align  7
                 stp     x0, x1, [sp, #-16]!
                 stp     x9, x30, [sp, #-16]!
+                str     x11, [sp, #-8]!
                 mov     x0, #2
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldr     x11, [sp], #8
                 ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
@@ -49,9 +55,11 @@ pub fn svc_init() {
                 .align  7
                 stp     x0, x1, [sp, #-16]!
                 stp     x9, x30, [sp, #-16]!
+                str     x11, [sp, #-8]!
                 mov     x0, #3
                 mrs     x1, esr_el1
                 bl      exc_handler
+                ldr     x11, [sp], #8
                 ldp     x9, x30, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
@@ -61,11 +69,11 @@ pub fn svc_init() {
     }
 }
 
-pub fn call_svc1(arg: u64) {
+pub fn call_svc1(arg: &str) {
     unsafe {
         asm!("
             mov     x2, $0
             svc     #1
-        " :: "r"(arg) : "x2" : "volatile")
+        " :: "r"(&arg as *const _ as u64) : "x2" : "volatile")
     }
 }

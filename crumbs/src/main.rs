@@ -89,7 +89,7 @@ fn main() {
 
     log_heap();
 
-    call_svc1(42);
+    call_svc1("hello");
 
     log("Done\n");
 
@@ -109,6 +109,11 @@ pub extern "C" fn exc_handler(exc_type: u32, esr: u32, x2: u64) {
 
         log("X2 was ");
         log_hex(x2 as u32);
+        log("\n");
+
+        let msg = unsafe { *(x2 as *const &str) };
+        log("Message is ");
+        log(msg);
         log("\n");
     } else {
         log("In exc_handler: type = ");
