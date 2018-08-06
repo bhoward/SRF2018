@@ -15,52 +15,52 @@ pub fn svc_init() {
                 // synchronous
                 .align  7
                 stp     x0, x1, [sp, #-16]!
-                stp     x9, x30, [sp, #-16]!
-                str     x11, [sp, #-8]!
+                stp     x9, x10, [sp, #-16]!
+                stp     x11, x30, [sp, #-16]!
                 mov     x0, #0
                 mrs     x1, esr_el1
                 bl      exc_handler
-                ldr     x11, [sp], #8
-                ldp     x9, x30, [sp], #16
+                ldp     x11, x30, [sp], #16
+                ldp     x9, x10, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
                 // IRQ
                 .align  7
                 stp     x0, x1, [sp, #-16]!
-                stp     x9, x30, [sp, #-16]!
-                str     x11, [sp, #-8]!
+                stp     x9, x10, [sp, #-16]!
+                stp     x11, x30, [sp, #-16]!
                 mov     x0, #1
                 mrs     x1, esr_el1
                 bl      exc_handler
-                ldr     x11, [sp], #8
-                ldp     x9, x30, [sp], #16
+                ldp     x11, x30, [sp], #16
+                ldp     x9, x10, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
                 // FIQ
                 .align  7
                 stp     x0, x1, [sp, #-16]!
-                stp     x9, x30, [sp, #-16]!
-                str     x11, [sp, #-8]!
+                stp     x9, x10, [sp, #-16]!
+                stp     x11, x30, [sp, #-16]!
                 mov     x0, #2
                 mrs     x1, esr_el1
                 bl      exc_handler
-                ldr     x11, [sp], #8
-                ldp     x9, x30, [sp], #16
+                ldp     x11, x30, [sp], #16
+                ldp     x9, x10, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
                 // SError
                 .align  7
                 stp     x0, x1, [sp, #-16]!
-                stp     x9, x30, [sp, #-16]!
-                str     x11, [sp, #-8]!
+                stp     x9, x10, [sp, #-16]!
+                stp     x11, x30, [sp, #-16]!
                 mov     x0, #3
                 mrs     x1, esr_el1
                 bl      exc_handler
-                ldr     x11, [sp], #8
-                ldp     x9, x30, [sp], #16
+                ldp     x11, x30, [sp], #16
+                ldp     x9, x10, [sp], #16
                 ldp     x0, x1, [sp], #16
                 eret
 
