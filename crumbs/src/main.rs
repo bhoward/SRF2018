@@ -103,7 +103,7 @@ fn main() {
 pub extern "C" fn exc_handler(exc_type: u32, esr: u32, x2: u64) {
     let ec = (esr >> 26);
 
-    if exc_type == 0 && ec == 0x15 {
+    if (exc_type & 0x3) == 0 && ec == 0x15 {
         // SVC call
         let op = esr & 0xFFFF; // immediate argument
         log("SVC ");

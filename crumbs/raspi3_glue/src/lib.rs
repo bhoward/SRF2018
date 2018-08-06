@@ -103,7 +103,7 @@ pub extern "C" fn _boot_cores() -> ! {
                 // enable AArch64 in EL2
                 SCR_EL3.set(0x5B1); // RW+HCE+SMD+NS
 
-                SPSR_EL3.set(0x3C9); // D+A+I+F+EL2h
+                SPSR_EL3.set(0x3C9); // D+A+I+F+EL2h -- use SP_EL2
                 
                 // ELR_EL3.set(???); // address of code to "return" to
                 // asm::eret();
@@ -131,7 +131,7 @@ pub extern "C" fn _boot_cores() -> ! {
                 // enable floating-point and SIMD in EL0/1
                 CPACR_EL1.modify(CPACR_EL1::FPEN.val(3));
 
-                SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t
+                SPSR_EL2.set(0x3C4); // D+A+I+F+EL1t -- use SP_EL0
 
                 // change exception level to EL1
                 // ELR_EL2.set(???); // address of code to "return" to
